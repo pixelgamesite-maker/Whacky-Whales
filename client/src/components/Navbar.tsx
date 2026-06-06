@@ -1,12 +1,8 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-
-const NAME_URL = 'https://aitxwwtybpgpqxsvlxzm.supabase.co/storage/v1/object/public/Images/Whacky/Watermark-name.png';
+import { NAME_URL, LOGO_URL, LINKS } from '../assets';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const isGallery = window.location.pathname === '/gallery';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -17,77 +13,82 @@ export default function Navbar() {
   const links = [
     { label: 'Home', href: '/' },
     { label: 'Gallery', href: '/gallery' },
-    { label: 'OpenSea', href: 'https://opensea.io/collection/whackywhales', external: true },
+    { label: 'OpenSea', href: LINKS.opensea, external: true },
   ];
 
   return (
-    <nav style={{
-      position: 'fixed',
-      top: 4,
-      left: 0,
-      right: 0,
-      zIndex: 50,
-      padding: '0 24px',
-      height: 64,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      background: scrolled ? 'rgba(232,246,255,0.85)' : 'transparent',
-      backdropFilter: scrolled ? 'blur(20px)' : 'none',
-      borderBottom: scrolled ? '1px solid rgba(91,184,255,0.15)' : 'none',
-      transition: 'all 0.3s ease',
-    }}>
-      {/* Logo */}
-      <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-        <span style={{ fontSize: '1.6rem' }}>🐋</span>
-        <img src={NAME_URL} alt="Whacky Whales" style={{ height: 26, objectFit: 'contain' }} />
-      </a>
-
-      {/* Desktop links */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} className="nav-desktop">
-        {links.map(l => (
-          <a
-            key={l.label}
-            href={l.href}
-            target={l.external ? '_blank' : undefined}
-            rel={l.external ? 'noopener noreferrer' : undefined}
-            style={{
-              fontFamily: "'Fredoka One', cursive",
-              fontSize: '0.95rem',
-              color: '#0d2a4a',
-              textDecoration: 'none',
-              padding: '8px 16px',
-              borderRadius: 50,
-              background: l.href === window.location.pathname ? 'rgba(91,184,255,0.2)' : 'transparent',
-              transition: 'background 0.2s, color 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(91,184,255,0.2)'; }}
-            onMouseLeave={e => { if (l.href !== window.location.pathname) e.currentTarget.style.background = 'transparent'; }}
-          >
-            {l.label}
-          </a>
-        ))}
-
-        {/* Social icons */}
-        <div style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
-          <a href="https://x.com/whacky_whales" target="_blank" rel="noopener noreferrer"
-            style={{ width: 36, height: 36, borderRadius: 50, background: '#0d2a4a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', fontSize: '0.8rem', fontFamily: "'Fredoka One', cursive", fontWeight: 700, transition: 'transform 0.2s, background 0.2s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#1a5276'; e.currentTarget.style.transform = 'scale(1.1)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#0d2a4a'; e.currentTarget.style.transform = 'scale(1)'; }}
-          >X</a>
-          <a href="https://discord.gg/whackywhales" target="_blank" rel="noopener noreferrer"
-            style={{ width: 36, height: 36, borderRadius: 50, background: '#5865F2', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', fontSize: '0.75rem', fontFamily: "'Fredoka One', cursive", fontWeight: 700, transition: 'transform 0.2s, background 0.2s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#4752c4'; e.currentTarget.style.transform = 'scale(1.1)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#5865F2'; e.currentTarget.style.transform = 'scale(1)'; }}
-          >D</a>
-        </div>
-      </div>
-
+    <>
       <style>{`
-        @media (max-width: 600px) {
-          .nav-desktop { display: none !important; }
+        .nav-link {
+          font-family: 'Fredoka One', cursive;
+          font-size: 0.95rem;
+          color: rgba(180,220,255,0.75);
+          text-decoration: none;
+          padding: 8px 16px;
+          border-radius: 50px;
+          transition: color 0.2s, background 0.2s;
         }
+        .nav-link:hover { color: #fff; background: rgba(91,184,255,0.12); }
+        .nav-link.active { color: #5bb8ff; background: rgba(91,184,255,0.1); }
+        .nav-social {
+          width: 36px; height: 36px; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          text-decoration: none; font-family: 'Fredoka One', cursive;
+          font-size: 0.8rem; font-weight: 700;
+          transition: transform 0.2s, background 0.2s;
+        }
+        .nav-social:hover { transform: scale(1.1); }
+        @media (max-width: 600px) { .nav-desktop { display: none !important; } }
       `}</style>
-    </nav>
+
+      <nav style={{
+        position: 'fixed',
+        top: 3,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        padding: '0 24px',
+        height: 64,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        background: scrolled ? 'rgba(13,42,74,0.92)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(20px)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(91,184,255,0.1)' : 'none',
+        transition: 'all 0.3s ease',
+      }}>
+        {/* Logo */}
+        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+          <img src={LOGO_URL} alt="" style={{ height: 32, objectFit: 'contain' }} />
+          <img src={NAME_URL} alt="Whacky Whales" style={{ height: 24, objectFit: 'contain', filter: 'brightness(10)' }} />
+        </a>
+
+        {/* Desktop links */}
+        <div className="nav-desktop" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {links.map(l => (
+            <a
+              key={l.label}
+              href={l.href}
+              target={l.external ? '_blank' : undefined}
+              rel={l.external ? 'noopener noreferrer' : undefined}
+              className={`nav-link${l.href === window.location.pathname ? ' active' : ''}`}
+            >
+              {l.label}
+            </a>
+          ))}
+
+          <div style={{ display: 'flex', gap: 8, marginLeft: 12 }}>
+            <a href={LINKS.twitter} target="_blank" rel="noopener noreferrer"
+              className="nav-social"
+              style={{ background: 'rgba(255,255,255,0.08)', color: '#fff' }}
+            >X</a>
+            <a href={LINKS.discord} target="_blank" rel="noopener noreferrer"
+              className="nav-social"
+              style={{ background: '#5865F2', color: '#fff' }}
+            >D</a>
+          </div>
+        </div>
+      </nav>
+    </>
   );
 }
