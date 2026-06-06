@@ -3,13 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
+import { LOGO_URL, NAME_URL, LINKS } from '../assets';
+
 // ── Config ────────────────────────────────────────────────────────
 const ALCHEMY_API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY as string;
 const CONTRACT_ADDRESS = import.meta.env.VITE_NFT_CONTRACT_ADDRESS as string;
 const ALCHEMY_BASE = `https://eth-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}`;
-
-const LOGO_URL = 'https://aitxwwtybpgpqxsvlxzm.supabase.co/storage/v1/object/public/Images/Whacky/Watermark-logo.png';
-const NAME_URL = 'https://aitxwwtybpgpqxsvlxzm.supabase.co/storage/v1/object/public/Images/Whacky/Watermark-name.png';
 
 const CANVAS_PRESETS = {
   'X Post':   { w: 1600, h: 900  },
@@ -78,7 +77,9 @@ function NFTCard({ nft, index }: { nft: any; index: number }) {
       {src ? (
         <img src={src} alt={name} style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', display: 'block' }} loading="lazy" />
       ) : (
-        <div style={{ width: '100%', aspectRatio: '1', background: '#e8f4ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>🐋</div>
+        <div style={{ width: '100%', aspectRatio: '1', background: '#e8f4ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img src={LOGO_URL} alt="" style={{ width: '40%', opacity: 0.3 }} />
+        </div>
       )}
       <div style={{ padding: '10px 12px', background: '#fff' }}>
         <p style={{ fontFamily: "'Fredoka One', cursive", fontSize: '0.9rem', color: '#0d2a4a', textAlign: 'center' }}>{name}</p>
@@ -135,10 +136,10 @@ export default function Gallery() {
       do {
         const params = new URLSearchParams({
           owner: addr,
-          contractAddresses: [CONTRACT_ADDRESS],
           withMetadata: 'true',
           pageSize: '100',
         });
+        params.append('contractAddresses[]', CONTRACT_ADDRESS);
         if (pageKey) params.set('pageKey', pageKey);
 
         const res = await fetch(`${ALCHEMY_BASE}/getNFTsForOwner?${params}`);
@@ -324,7 +325,9 @@ export default function Gallery() {
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} style={{ textAlign: 'center', marginBottom: 52 }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>🐋🎨</div>
+          <div style={{ marginBottom: 16 }}>
+            <img src={LOGO_URL} alt="" style={{ height: 52, objectFit: 'contain' }} />
+          </div>
           <h1 style={{ fontFamily: "'Fredoka One', cursive", fontSize: 'clamp(2rem, 5vw, 3rem)', color: '#0d2a4a', marginBottom: 12 }}>
             Your Whale Gallery
           </h1>
@@ -332,7 +335,7 @@ export default function Gallery() {
             Paste your wallet address to load your Whacky Whales, then generate a custom banner to flex on X.
           </p>
           <p style={{ fontFamily: "'Nunito', sans-serif", color: '#7aaabf', fontSize: '0.85rem', marginTop: 10, letterSpacing: '0.02em' }}>
-            🔒 No wallet connection needed — read-only lookup
+            No wallet connection needed — read-only lookup
           </p>
         </motion.div>
 
@@ -392,7 +395,7 @@ export default function Gallery() {
               onMouseEnter={e => { if (status !== 'loading') { e.currentTarget.style.transform = 'translateY(-2px)'; } }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
             >
-              {status === 'loading' ? statusMsg : '🐋 Detect My Whales'}
+              {status === 'loading' ? statusMsg : 'Detect My Whales'}
             </button>
           </div>
 
@@ -429,7 +432,7 @@ export default function Gallery() {
               }}
             >
               <p style={{ fontFamily: "'Fredoka One', cursive", fontSize: '0.8rem', letterSpacing: '0.2em', color: '#5bb8ff', textTransform: 'uppercase', marginBottom: 20 }}>
-                🌊 Your Pod — {nfts.length} Whale{nfts.length > 1 ? 's' : ''}
+                Your Pod — {nfts.length} Whale{nfts.length > 1 ? 's' : ''}
               </p>
               <div style={{
                 display: 'grid',
@@ -452,7 +455,7 @@ export default function Gallery() {
             marginBottom: 28,
             border: '1.5px dashed rgba(91,184,255,0.3)',
           }}>
-            <div style={{ fontSize: '3rem', marginBottom: 16, opacity: 0.5 }}>🐋</div>
+            <img src={LOGO_URL} alt="" style={{ height: 60, objectFit: 'contain', opacity: 0.3, marginBottom: 16 }} />
             <p style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1.1rem', color: '#7aaabf' }}>No whales loaded yet</p>
             <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.9rem', color: '#9bbfd4', marginTop: 6 }}>Enter your wallet address above</p>
           </div>
@@ -533,7 +536,7 @@ export default function Gallery() {
             onMouseEnter={e => { if (nfts.length && !generating) e.currentTarget.style.transform = 'translateY(-2px)'; }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
           >
-            {generating ? '🎨 Generating…' : '⬇️ Download Banner PNG'}
+            {generating ? 'Generating…' : 'Download Banner PNG'}
           </button>
           <button
             onClick={() => { setNfts([]); setAddress(''); setStatus('idle'); setStatusMsg(''); }}
