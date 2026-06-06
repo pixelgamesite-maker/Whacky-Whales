@@ -1,5 +1,0 @@
-{
-  "deploy": {
-    "startCommand": "npx serve dist/public -s -l 8080"
-  }
-}
