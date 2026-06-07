@@ -4,7 +4,38 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { COLLECTION_IMAGES, LINKS } from '../assets';
 
-// ── Animated vertical strip of whale images ──────────────────────
+const OPENSEA_LOGO = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky/Logo/OpenSea-logo.png';
+
+// ── Floating bubbles ─────────────────────────────────────────────
+function OceanParticles() {
+  const particles = Array.from({ length: 14 }, (_, i) => ({
+    id: i,
+    size: 4 + (i * 7.3) % 12,
+    left: 5 + (i * 17.1) % 90,
+    delay: (i * 2.3) % 10,
+    duration: 10 + (i * 3.1) % 10,
+  }));
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
+      {particles.map(p => (
+        <motion.div
+          key={p.id}
+          style={{
+            position: 'absolute', bottom: -20, left: `${p.left}%`,
+            width: p.size, height: p.size, borderRadius: '50%',
+            background: 'rgba(180,225,255,0.12)',
+            border: '1px solid rgba(140,200,255,0.18)',
+          }}
+          animate={{ y: [-20, -(800 + p.size * 10)], opacity: [0, 0.6, 0] }}
+          transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: 'linear' }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Scrolling vertical whale strip ──────────────────────────────
 function WhaleStrip({ images, reverse = false, speed = 18 }: { images: string[]; reverse?: boolean; speed?: number }) {
   return (
     <div style={{ overflow: 'hidden', height: '100%', position: 'relative' }}>
@@ -16,13 +47,8 @@ function WhaleStrip({ images, reverse = false, speed = 18 }: { images: string[];
         {[...images, ...images].map((src, i) => (
           <motion.div
             key={i}
-            whileHover={{ scale: 1.05, zIndex: 10 }}
-            style={{
-              borderRadius: 16,
-              overflow: 'hidden',
-              boxShadow: '0 8px 32px rgba(0,30,60,0.35)',
-              flexShrink: 0,
-            }}
+            whileHover={{ scale: 1.06, zIndex: 10 }}
+            style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,30,60,0.4)', flexShrink: 0 }}
           >
             <img src={src} alt="" style={{ width: '100%', display: 'block', aspectRatio: '1', objectFit: 'cover' }} loading="lazy" />
           </motion.div>
@@ -32,12 +58,11 @@ function WhaleStrip({ images, reverse = false, speed = 18 }: { images: string[];
   );
 }
 
-// ── Animated single bouncing column ─────────────────────────────
-function BouncingColumn() {
+// ── Single whale carousel ────────────────────────────────────────
+function WhaleCycle() {
   const [current, setCurrent] = useState(0);
-
   useEffect(() => {
-    const t = setInterval(() => setCurrent(p => (p + 1) % COLLECTION_IMAGES.length), 2200);
+    const t = setInterval(() => setCurrent(p => (p + 1) % COLLECTION_IMAGES.length), 2400);
     return () => clearInterval(t);
   }, []);
 
@@ -46,98 +71,52 @@ function BouncingColumn() {
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
-          initial={{ y: -280, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 40, opacity: 0, scale: 0.95 }}
-          transition={{
-            y: { type: 'spring', stiffness: 260, damping: 18, mass: 0.9 },
-            opacity: { duration: 0.2 },
-          }}
+          initial={{ y: -260, opacity: 0, scale: 0.92 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          exit={{ y: 36, opacity: 0, scale: 0.95 }}
+          transition={{ y: { type: 'spring', stiffness: 280, damping: 20 }, opacity: { duration: 0.18 } }}
           style={{
-            borderRadius: 24,
+            borderRadius: 28,
             overflow: 'hidden',
-            boxShadow: '0 24px 80px rgba(0,30,80,0.45), 0 0 0 1px rgba(91,184,255,0.2)',
+            boxShadow: '0 28px 80px rgba(0,20,60,0.55), 0 0 0 1.5px rgba(91,184,255,0.22)',
           }}
         >
-          <img
-            src={COLLECTION_IMAGES[current]}
-            alt="Whacky Whale"
-            style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', display: 'block' }}
-          />
+          <img src={COLLECTION_IMAGES[current]} alt="Whacky Whale" style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', display: 'block' }} />
         </motion.div>
       </AnimatePresence>
-      {/* Bounce shadow */}
       <motion.div
         key={current + '-shadow'}
         initial={{ scaleX: 0.3, opacity: 0 }}
-        animate={{ scaleX: 1, opacity: 0.25 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.05 }}
+        animate={{ scaleX: 1, opacity: 0.22 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.06 }}
         style={{
-          position: 'absolute',
-          bottom: -16,
-          left: '10%',
-          right: '10%',
-          height: 20,
-          background: 'radial-gradient(ellipse, rgba(0,30,80,0.6) 0%, transparent 70%)',
-          borderRadius: '50%',
-          filter: 'blur(6px)',
+          position: 'absolute', bottom: -18, left: '10%', right: '10%', height: 22,
+          background: 'radial-gradient(ellipse, rgba(0,20,70,0.7) 0%, transparent 70%)',
+          borderRadius: '50%', filter: 'blur(7px)',
         }}
       />
     </div>
   );
 }
 
-// ── Ocean wave SVG ───────────────────────────────────────────────
-function OceanWave({ flip = false, color = 'rgba(255,255,255,0.06)' }: { flip?: boolean; color?: string }) {
+// ── Ocean wave divider ───────────────────────────────────────────
+function Wave({ flip = false, opacity = 0.06 }: { flip?: boolean; opacity?: number }) {
   return (
-    <div style={{ width: '100%', lineHeight: 0, transform: flip ? 'scaleY(-1)' : 'none' }}>
-      <svg viewBox="0 0 1440 80" preserveAspectRatio="none" style={{ width: '100%', height: 60, display: 'block' }}>
-        <path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z" fill={color} />
+    <div style={{ width: '100%', lineHeight: 0, transform: flip ? 'scaleY(-1)' : 'none', pointerEvents: 'none' }}>
+      <svg viewBox="0 0 1440 80" preserveAspectRatio="none" style={{ width: '100%', height: 56, display: 'block' }}>
+        <path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z" fill={`rgba(255,255,255,${opacity})`} />
       </svg>
     </div>
   );
 }
 
-// ── Floating particle bubbles ────────────────────────────────────
-function OceanParticles() {
-  const particles = Array.from({ length: 14 }, (_, i) => ({
-    id: i,
-    size: 4 + Math.random() * 12,
-    left: 5 + Math.random() * 90,
-    delay: Math.random() * 10,
-    duration: 8 + Math.random() * 10,
-  }));
-
-  return (
-    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
-      {particles.map(p => (
-        <motion.div
-          key={p.id}
-          style={{
-            position: 'absolute',
-            bottom: -20,
-            left: `${p.left}%`,
-            width: p.size,
-            height: p.size,
-            borderRadius: '50%',
-            background: 'rgba(180,225,255,0.15)',
-            border: '1px solid rgba(140,200,255,0.2)',
-          }}
-          animate={{ y: [-20, -(window.innerHeight + 40)], opacity: [0, 0.7, 0] }}
-          transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: 'linear' }}
-        />
-      ))}
-    </div>
-  );
-}
-
-// ── Hero section ─────────────────────────────────────────────────
+// ── HERO ─────────────────────────────────────────────────────────
 function Hero() {
   const strips = [
     COLLECTION_IMAGES.slice(0, 8),
     COLLECTION_IMAGES.slice(8, 16),
     COLLECTION_IMAGES.slice(16, 24),
-    COLLECTION_IMAGES.slice(24, 30),
+    COLLECTION_IMAGES.slice(24, 32),
   ];
 
   return (
@@ -149,68 +128,37 @@ function Hero() {
       zIndex: 2,
       overflow: 'hidden',
     }}>
-      {/* Left — text */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
+      {/* Left — copy */}
+      <div className="hero-text" style={{
+        display: 'flex', flexDirection: 'column', justifyContent: 'center',
         padding: 'clamp(100px, 12vw, 160px) clamp(24px, 6vw, 80px) 60px',
       }}>
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          style={{
-            fontFamily: "'Nunito', sans-serif",
-            fontSize: '0.8rem',
-            letterSpacing: '0.3em',
-            color: '#5bb8ff',
-            textTransform: 'uppercase',
-            fontWeight: 800,
-            marginBottom: 20,
-          }}
+          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+          style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.78rem', letterSpacing: '0.3em', color: '#5bb8ff', textTransform: 'uppercase', fontWeight: 800, marginBottom: 20 }}
         >
           Welcome to the Pod
         </motion.p>
 
         <motion.h1
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.7 }}
-          style={{
-            fontFamily: "'Fredoka One', cursive",
-            fontSize: 'clamp(3rem, 7vw, 6rem)',
-            lineHeight: 1.0,
-            color: '#fff',
-            marginBottom: 28,
-            textShadow: '0 4px 30px rgba(0,0,0,0.3)',
-          }}
+          initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32, duration: 0.7 }}
+          style={{ fontFamily: "'Fredoka One', cursive", fontSize: 'clamp(3rem, 7vw, 6rem)', lineHeight: 1.0, color: '#fff', marginBottom: 28, textShadow: '0 4px 30px rgba(0,0,0,0.3)' }}
         >
           Whacky<br />Whales
         </motion.h1>
 
         <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.55 }}
-          style={{
-            fontFamily: "'Nunito', sans-serif",
-            fontSize: 'clamp(0.95rem, 1.8vw, 1.1rem)',
-            color: 'rgba(180,220,255,0.8)',
-            lineHeight: 1.75,
-            maxWidth: 400,
-            marginBottom: 44,
-          }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}
+          style={{ fontFamily: "'Nunito', sans-serif", fontSize: 'clamp(0.95rem, 1.8vw, 1.1rem)', color: 'rgba(180,220,255,0.8)', lineHeight: 1.75, maxWidth: 400, marginBottom: 44 }}
         >
           10,000 uniquely whacky NFTs swimming through the Ethereum blockchain. Collect your whale. Join the pod. Make waves.
         </motion.p>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
+          style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}
         >
+          {/* Get a Whale — with OpenSea logo */}
           <a
             href={LINKS.opensea}
             target="_blank"
@@ -220,19 +168,31 @@ function Hero() {
               color: '#0d2a4a',
               fontFamily: "'Fredoka One', cursive",
               fontSize: '1rem',
-              padding: '14px 32px',
+              padding: '13px 28px 13px 20px',
               borderRadius: 50,
               textDecoration: 'none',
               fontWeight: 700,
               boxShadow: '0 8px 30px rgba(91,184,255,0.35)',
               transition: 'transform 0.2s, box-shadow 0.2s',
-              display: 'inline-block',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 10,
             }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 14px 40px rgba(91,184,255,0.5)'; }}
             onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 8px 30px rgba(91,184,255,0.35)'; }}
           >
+            <span style={{
+              width: 28, height: 28, borderRadius: '50%',
+              background: 'rgba(13,42,74,0.18)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <img src={OPENSEA_LOGO} alt="OpenSea" style={{ width: 18, height: 18, objectFit: 'contain', display: 'block' }} />
+            </span>
             Get a Whale
           </a>
+
+          {/* Grid Maker */}
           <a
             href="/gallery"
             style={{
@@ -243,7 +203,7 @@ function Hero() {
               padding: '14px 32px',
               borderRadius: 50,
               textDecoration: 'none',
-              border: '1.5px solid rgba(255,255,255,0.2)',
+              border: '1.5px solid rgba(255,255,255,0.18)',
               transition: 'background 0.2s, transform 0.2s',
               display: 'inline-block',
               backdropFilter: 'blur(8px)',
@@ -251,13 +211,13 @@ function Hero() {
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = ''; }}
           >
-            Banner Maker
+            Grid Maker
           </a>
         </motion.div>
       </div>
 
-      {/* Right — scrolling strips */}
-      <div style={{
+      {/* Right — scrolling whale strips */}
+      <div className="hero-strips" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap: 8,
@@ -271,19 +231,17 @@ function Hero() {
         ))}
       </div>
 
-      {/* Mobile: show bouncing single image instead */}
       <style>{`
         @media (max-width: 700px) {
           .hero-strips { display: none !important; }
           .hero-text { grid-column: 1 / -1 !important; padding: 120px 24px 60px !important; align-items: center; text-align: center; }
-          .hero-text p:first-child { margin: 0 auto; }
         }
       `}</style>
     </section>
   );
 }
 
-// ── Stats bar ────────────────────────────────────────────────────
+// ── STATS BAR ────────────────────────────────────────────────────
 function StatsBar() {
   const stats = [
     { value: '10,000', label: 'Total Supply' },
@@ -296,20 +254,13 @@ function StatsBar() {
     <div style={{
       background: 'rgba(255,255,255,0.05)',
       backdropFilter: 'blur(20px)',
-      borderTop: '1px solid rgba(255,255,255,0.08)',
-      borderBottom: '1px solid rgba(255,255,255,0.08)',
+      borderTop: '1px solid rgba(255,255,255,0.07)',
+      borderBottom: '1px solid rgba(255,255,255,0.07)',
       padding: '32px 24px',
       position: 'relative',
       zIndex: 2,
     }}>
-      <div style={{
-        maxWidth: 900,
-        margin: '0 auto',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: 24,
-        textAlign: 'center',
-      }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, textAlign: 'center' }}>
         {stats.map((s, i) => (
           <motion.div
             key={i}
@@ -319,7 +270,7 @@ function StatsBar() {
             transition={{ delay: i * 0.1 }}
           >
             <p style={{ fontFamily: "'Fredoka One', cursive", fontSize: 'clamp(1.4rem, 3vw, 2.2rem)', color: '#5bb8ff', marginBottom: 4 }}>{s.value}</p>
-            <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.78rem', color: 'rgba(180,220,255,0.55)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{s.label}</p>
+            <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.78rem', color: 'rgba(180,220,255,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{s.label}</p>
           </motion.div>
         ))}
       </div>
@@ -327,104 +278,193 @@ function StatsBar() {
   );
 }
 
-// ── Collection showcase — animated single bouncing image ─────────
+// ── COLLECTION SECTION — NPC-style bordered grid ──────────────────
 function CollectionShowcase() {
+  // Pick a stable 30-item set for the grid
+  const gridNfts = COLLECTION_IMAGES.slice(0, 30);
+
   return (
-    <section style={{ padding: '120px 24px', position: 'relative', zIndex: 2 }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
+    <section style={{ padding: '100px 24px 120px', position: 'relative', zIndex: 2 }}>
+      <Wave />
 
-        {/* Bouncing image */}
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-        >
-          <BouncingColumn />
-        </motion.div>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
-        {/* Text */}
+        {/* Section label */}
         <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 48 }}
         >
-          <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.75rem', letterSpacing: '0.3em', color: '#5bb8ff', textTransform: 'uppercase', fontWeight: 800, marginBottom: 16 }}>
+          <div style={{ height: 2, width: 40, background: '#5bb8ff', borderRadius: 2 }} />
+          <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.72rem', letterSpacing: '0.32em', color: '#5bb8ff', textTransform: 'uppercase', fontWeight: 800 }}>
             The Collection
           </p>
-          <h2 style={{ fontFamily: "'Fredoka One', cursive", fontSize: 'clamp(2rem, 4vw, 3.2rem)', color: '#fff', lineHeight: 1.1, marginBottom: 20 }}>
-            Meet the Whales
-          </h2>
-          <p style={{ fontFamily: "'Nunito', sans-serif", color: 'rgba(180,220,255,0.7)', fontSize: '1rem', lineHeight: 1.8, marginBottom: 36 }}>
-            10,000 uniquely whacky characters swimming through the Ethereum ocean. Each one is algorithmically generated with hundreds of unique traits — no two are ever the same.
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40 }}>
-            {[
-              { title: 'Unique Traits', desc: 'Hundreds of hand-crafted accessories, backgrounds, and expressions.' },
-              { title: 'True Ownership', desc: 'Your whale lives on Ethereum. Your wallet, your asset, forever.' },
-              { title: 'Pod Benefits', desc: 'Holders get exclusive access to drops, events, and the community.' },
-            ].map((f, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}
-              >
-                <div style={{
-                  width: 8, height: 8, borderRadius: '50%', background: '#5bb8ff',
-                  flexShrink: 0, marginTop: 8,
-                  boxShadow: '0 0 10px rgba(91,184,255,0.6)',
-                }} />
-                <div>
-                  <p style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1rem', color: '#fff', marginBottom: 4 }}>{f.title}</p>
-                  <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.88rem', color: 'rgba(180,220,255,0.6)', lineHeight: 1.6 }}>{f.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          <a
-            href={LINKS.opensea}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'inline-block',
-              background: 'linear-gradient(135deg, #5bb8ff, #2a8fd4)',
-              color: '#0d2a4a',
-              fontFamily: "'Fredoka One', cursive",
-              fontSize: '1rem',
-              padding: '14px 36px',
-              borderRadius: 50,
-              textDecoration: 'none',
-              boxShadow: '0 8px 30px rgba(91,184,255,0.3)',
-              transition: 'transform 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
-          >
-            View on OpenSea
-          </a>
         </motion.div>
+
+        {/* Two-column layout: grid left, text right */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 72, alignItems: 'center' }} className="showcase-layout">
+
+          {/* LEFT — bordered whale grid (MiniZen style) */}
+          <motion.div
+            initial={{ opacity: 0, x: -32 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.65 }}
+          >
+            <div style={{
+              border: '3px solid #1a1a1a',
+              borderRadius: 4,
+              overflow: 'hidden',
+              boxShadow: '6px 6px 0 #0d2a4a, 12px 12px 0 rgba(91,184,255,0.12)',
+              background: 'rgba(10,20,40,0.6)',
+              backdropFilter: 'blur(10px)',
+            }}>
+              {/* Grid of whales — 5 columns */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(5, 1fr)',
+                gap: 0,
+              }}>
+                {gridNfts.map((src, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.018, duration: 0.3 }}
+                    whileHover={{ scale: 1.12, zIndex: 10, boxShadow: '0 0 0 2px #5bb8ff' }}
+                    style={{
+                      position: 'relative',
+                      aspectRatio: '1',
+                      overflow: 'hidden',
+                      borderRight: (i + 1) % 5 !== 0 ? '1px solid rgba(91,184,255,0.08)' : 'none',
+                      borderBottom: i < 25 ? '1px solid rgba(91,184,255,0.08)' : 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <img
+                      src={src}
+                      alt=""
+                      loading="lazy"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Footer bar */}
+              <div style={{
+                padding: '14px 20px',
+                borderTop: '1px solid rgba(91,184,255,0.1)',
+                background: 'rgba(5,15,30,0.8)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+                <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.72rem', color: 'rgba(180,220,255,0.4)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+                  10,000 Supply · More revealed soon
+                </p>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {[0,1,2].map(d => (
+                    <div key={d} style={{ width: 6, height: 6, borderRadius: '50%', background: d === 0 ? '#5bb8ff' : 'rgba(91,184,255,0.25)' }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* RIGHT — text */}
+          <motion.div
+            initial={{ opacity: 0, x: 32 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.65 }}
+            style={{ display: 'flex', flexDirection: 'column' }}
+          >
+            <h2 style={{ fontFamily: "'Fredoka One', cursive", fontSize: 'clamp(2.2rem, 4vw, 3.4rem)', color: '#fff', lineHeight: 1.1, marginBottom: 20 }}>
+              Meet the<br />Whales
+            </h2>
+            <p style={{ fontFamily: "'Nunito', sans-serif", color: 'rgba(180,220,255,0.68)', fontSize: '1rem', lineHeight: 1.85, marginBottom: 38 }}>
+              10,000 uniquely whacky characters swimming through the Ethereum ocean. Each one is algorithmically generated with hundreds of unique traits — no two are ever the same.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 44 }}>
+              {[
+                { title: 'Unique Traits', desc: 'Hundreds of hand-crafted accessories, backgrounds, and expressions.' },
+                { title: 'True Ownership', desc: 'Your whale lives on Ethereum. Your wallet, your asset, forever.' },
+                { title: 'Pod Benefits', desc: 'Holders get exclusive access to drops, events, and the community.' },
+              ].map((f, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.14 }}
+                  style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}
+                >
+                  <div style={{
+                    width: 9, height: 9, borderRadius: '50%', background: '#5bb8ff',
+                    flexShrink: 0, marginTop: 7,
+                    boxShadow: '0 0 12px rgba(91,184,255,0.65)',
+                  }} />
+                  <div>
+                    <p style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1.05rem', color: '#fff', marginBottom: 4 }}>{f.title}</p>
+                    <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.88rem', color: 'rgba(180,220,255,0.58)', lineHeight: 1.65 }}>{f.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <a
+              href={LINKS.opensea}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                alignSelf: 'flex-start',
+                background: 'linear-gradient(135deg, #5bb8ff, #2a8fd4)',
+                color: '#0d2a4a',
+                fontFamily: "'Fredoka One', cursive",
+                fontSize: '1rem',
+                padding: '13px 28px 13px 20px',
+                borderRadius: 50,
+                textDecoration: 'none',
+                boxShadow: '0 8px 30px rgba(91,184,255,0.3)',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 14px 40px rgba(91,184,255,0.5)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 8px 30px rgba(91,184,255,0.3)'; }}
+            >
+              <span style={{
+                width: 28, height: 28, borderRadius: '50%',
+                background: 'rgba(13,42,74,0.18)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <img src={OPENSEA_LOGO} alt="OpenSea" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+              </span>
+              View on OpenSea
+            </a>
+          </motion.div>
+        </div>
       </div>
 
       <style>{`
-        @media (max-width: 700px) {
-          .showcase-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
+        @media (max-width: 900px) {
+          .showcase-layout { grid-template-columns: 1fr !important; gap: 52px !important; }
         }
       `}</style>
     </section>
   );
 }
 
-// ── Banner CTA ───────────────────────────────────────────────────
+// ── BANNER CTA ───────────────────────────────────────────────────
 function BannerCTA() {
   return (
     <section style={{ padding: '0 24px 120px', position: 'relative', zIndex: 2 }}>
-      <OceanWave color="rgba(255,255,255,0.04)" />
+      <Wave opacity={0.04} />
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -434,21 +474,20 @@ function BannerCTA() {
           margin: '0 auto',
           background: 'rgba(255,255,255,0.05)',
           backdropFilter: 'blur(24px)',
-          border: '1px solid rgba(91,184,255,0.2)',
+          border: '1px solid rgba(91,184,255,0.18)',
           borderRadius: 32,
           padding: 'clamp(48px, 7vw, 80px)',
           textAlign: 'center',
-          boxShadow: '0 30px 80px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
+          boxShadow: '0 30px 80px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.09)',
           position: 'relative',
           overflow: 'hidden',
         }}
       >
-        {/* Glow orb */}
         <div style={{
           position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: 400, height: 200,
-          background: 'radial-gradient(ellipse, rgba(91,184,255,0.12) 0%, transparent 70%)',
+          width: 420, height: 210,
+          background: 'radial-gradient(ellipse, rgba(91,184,255,0.1) 0%, transparent 70%)',
           pointerEvents: 'none',
         }} />
 
@@ -458,8 +497,8 @@ function BannerCTA() {
         <h2 style={{ fontFamily: "'Fredoka One', cursive", fontSize: 'clamp(1.8rem, 4vw, 3rem)', color: '#fff', marginBottom: 16, lineHeight: 1.1 }}>
           Show Off Your Pod
         </h2>
-        <p style={{ fontFamily: "'Nunito', sans-serif", color: 'rgba(180,220,255,0.7)', fontSize: '1rem', maxWidth: 460, margin: '0 auto 40px', lineHeight: 1.75 }}>
-          Generate a custom banner or grid with all your Whacky Whales. Perfect for your X profile header.
+        <p style={{ fontFamily: "'Nunito', sans-serif", color: 'rgba(180,220,255,0.68)', fontSize: '1rem', maxWidth: 460, margin: '0 auto 40px', lineHeight: 1.75 }}>
+          Generate a custom grid with all your Whacky Whales. Perfect for your X profile.
         </p>
         <a
           href="/gallery"
@@ -478,14 +517,14 @@ function BannerCTA() {
           onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 14px 40px rgba(91,184,255,0.5)'; }}
           onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 8px 30px rgba(91,184,255,0.35)'; }}
         >
-          Open Banner Maker
+          Open Grid Maker
         </a>
       </motion.div>
     </section>
   );
 }
 
-// ── Main ─────────────────────────────────────────────────────────
+// ── MAIN ─────────────────────────────────────────────────────────
 export default function Home() {
   return (
     <div style={{
@@ -505,8 +544,6 @@ export default function Home() {
       `}</style>
 
       <OceanParticles />
-
-      {/* Top accent line */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #5bb8ff, #2a8fd4, #5bb8ff)', zIndex: 100 }} />
 
       <Navbar />
