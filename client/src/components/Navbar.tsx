@@ -50,13 +50,7 @@ export default function Navbar() {
       bg: '#5865F2',
       color: '#fff',
     },
-    {
-      href: 'https://opensea.io/collection/whackywhales',
-      label: 'OpenSea',
-      icon: <img src={OPENSEA_LOGO} alt="OpenSea" style={{ width: 20, height: 20, objectFit: 'contain', display: 'block' }} />,
-      bg: '#fff',
-      color: '#0d2a4a',
-    },
+
   ];
 
   return (
