@@ -40,7 +40,7 @@ function resolveName(nft: any): string {
   return nft.name || nft.title || `Whale #${nft.tokenId}`;
 }
 
-async function loadImg(src: string): Promise<<HTMLImageElement> {
+async function loadImg(src: string): Promise<HTMLImageElement> {
   return new Promise((res, rej) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
