@@ -19,7 +19,6 @@ const CANVAS_PRESETS = {
 const WM_POSITIONS = ['Right Strip', 'Bottom Strip', 'Corner', 'Center'] as const;
 type WMPosition = typeof WM_POSITIONS[number];
 type WMContent = 'logo-only' | 'name-only' | 'both';
-type Mode = 'grid' | 'banner';
 
 // ── Helpers ───────────────────────────────────────────────────────
 function getTransparentUrl(tokenId: string | number): string {
@@ -57,7 +56,6 @@ async function renderCanvas(
   preset: keyof typeof CANVAS_PRESETS,
   wmPos: WMPosition,
   wmContent: WMContent,
-  mode: Mode
 ) {
   const { w, h } = CANVAS_PRESETS[preset];
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -93,71 +91,36 @@ async function renderCanvas(
   if (wmPos === 'Right Strip')  imgArea = { x: 0, y: 0, w: w - STRIP, h };
   if (wmPos === 'Bottom Strip') imgArea = { x: 0, y: 0, w, h: h - STRIP };
 
-  if (mode === 'grid') {
-    const aspect = imgArea.w / imgArea.h;
-    let cols = Math.ceil(Math.sqrt(count * aspect));
-    let rows = Math.ceil(count / cols);
+  // Grid layout
+  const aspect = imgArea.w / imgArea.h;
+  let cols = Math.ceil(Math.sqrt(count * aspect));
+  let rows = Math.ceil(count / cols);
 
-    while (rows > 1 && (rows - 1) * cols >= count) {
-      rows--;
-      cols = Math.ceil(count / rows);
-    }
+  while (rows > 1 && (rows - 1) * cols >= count) {
+    rows--;
+    cols = Math.ceil(count / rows);
+  }
 
-    const cellW = (imgArea.w - pad * (cols + 1)) / cols;
-    const cellH = (imgArea.h - pad * (rows + 1)) / rows;
+  const cellW = (imgArea.w - pad * (cols + 1)) / cols;
+  const cellH = (imgArea.h - pad * (rows + 1)) / rows;
 
-    for (let i = 0; i < images.length; i++) {
-      const img = images[i];
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const cx = imgArea.x + pad + col * (cellW + pad) + cellW / 2;
-      const cy = imgArea.y + pad + row * (cellH + pad) + cellH / 2;
+  for (let i = 0; i < images.length; i++) {
+    const img = images[i];
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const cx = imgArea.x + pad + col * (cellW + pad) + cellW / 2;
+    const cy = imgArea.y + pad + row * (cellH + pad) + cellH / 2;
 
-      const scale = Math.min((cellW - 20) / img.width, (cellH - 20) / img.height);
-      const dw = img.width * scale;
-      const dh = img.height * scale;
+    const scale = Math.min((cellW - 20) / img.width, (cellH - 20) / img.height);
+    const dw = img.width * scale;
+    const dh = img.height * scale;
 
-      // Subtle drop shadow only
-      ctx.save();
-      ctx.shadowColor = 'rgba(0,0,0,0.25)';
-      ctx.shadowBlur = 16;
-      ctx.shadowOffsetY = 6;
-      ctx.drawImage(img, cx - dw / 2, cy - dh / 2, dw, dh);
-      ctx.restore();
-    }
-
-  } else {
-    // Banner mode — horizontal strip, evenly distributed
-    const usableW = imgArea.w - pad * 2;
-    const usableH = imgArea.h - pad * 2;
-    const maxImgH = usableH * 0.82;
-
-    // Scale all to same height then distribute
-    const scaled = images.map(img => {
-      const s = maxImgH / img.height;
-      return { img, w: img.width * s, h: maxImgH };
-    });
-
-    const totalW = scaled.reduce((a, b) => a + b.w, 0) + (count - 1) * 24;
-    let startX = imgArea.x + pad + (usableW - Math.min(totalW, usableW)) / 2;
-    const cy = imgArea.y + pad + usableH / 2;
-
-    const scaleDown = totalW > usableW ? usableW / totalW : 1;
-
-    for (let i = 0; i < scaled.length; i++) {
-      const { img, w: iw, h: ih } = scaled[i];
-      const dw = iw * scaleDown;
-      const dh = ih * scaleDown;
-
-      ctx.save();
-      ctx.shadowColor = 'rgba(0,0,0,0.3)';
-      ctx.shadowBlur = 20;
-      ctx.shadowOffsetY = 8;
-      ctx.drawImage(img, startX, cy - dh / 2, dw, dh);
-      ctx.restore();
-
-      startX += dw + 24 * scaleDown;
-    }
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.25)';
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetY = 6;
+    ctx.drawImage(img, cx - dw / 2, cy - dh / 2, dw, dh);
+    ctx.restore();
   }
 
   // ── Watermark ─────────────────────────────────────────────────
@@ -265,14 +228,64 @@ async function renderCanvas(
       ctx.drawImage(nameImg, w - boxW - pad + boxPad, h - boxH - pad + boxPad, nw, nh);
     }
 
-  } else { // Center overlay
-    const lSize = Math.round(Math.min(w, h) * 0.11);
-    ctx.globalAlpha = 0.1;
+  } else { // Center — glass pill watermark
+    const lSize = Math.round(Math.min(w, h) * 0.13);
+
+    let contentW = lSize;
+    let contentH = lSize;
     if (logo && nameImg) {
-      ctx.drawImage(logo, w / 2 - lSize - 8, h / 2 - lSize / 2, lSize, lSize);
       const nw = lSize * 1.9;
       const nh = nw * (nameImg.height / nameImg.width);
-      ctx.drawImage(nameImg, w / 2 + 8, h / 2 - nh / 2, nw, nh);
+      contentW = lSize + nw + 24;
+      contentH = Math.max(lSize, nh);
+    } else if (nameImg) {
+      contentW = lSize * 2.6;
+      contentH = contentW * (nameImg.height / nameImg.width);
+    }
+
+    const boxPad = 28;
+    const boxW = contentW + boxPad * 2;
+    const boxH = contentH + boxPad * 2;
+    const bx = w / 2 - boxW / 2;
+    const by = h / 2 - boxH / 2;
+    const radius = 24;
+
+    // Glass background
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(bx, by, boxW, boxH, radius);
+    ctx.clip();
+
+    ctx.fillStyle = 'rgba(10, 22, 48, 0.52)';
+    ctx.fillRect(bx, by, boxW, boxH);
+
+    const sheen = ctx.createLinearGradient(bx, by, bx, by + boxH * 0.5);
+    sheen.addColorStop(0, 'rgba(255,255,255,0.13)');
+    sheen.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = sheen;
+    ctx.fillRect(bx, by, boxW, boxH);
+
+    ctx.restore();
+
+    // Glass border + glow
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(bx, by, boxW, boxH, radius);
+    ctx.strokeStyle = 'rgba(91,184,255,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.shadowColor = 'rgba(91,184,255,0.25)';
+    ctx.shadowBlur = 32;
+    ctx.stroke();
+    ctx.restore();
+
+    // Content
+    ctx.save();
+    ctx.globalAlpha = 0.82;
+    if (logo && nameImg) {
+      const nw = lSize * 1.9;
+      const nh = nw * (nameImg.height / nameImg.width);
+      ctx.drawImage(logo, w / 2 - (lSize + nw + 24) / 2, h / 2 - lSize / 2, lSize, lSize);
+      ctx.drawImage(nameImg, w / 2 - (lSize + nw + 24) / 2 + lSize + 24, h / 2 - nh / 2, nw, nh);
     } else if (logo) {
       ctx.drawImage(logo, w / 2 - lSize / 2, h / 2 - lSize / 2, lSize, lSize);
     } else if (nameImg) {
@@ -280,41 +293,13 @@ async function renderCanvas(
       const nh = nw * (nameImg.height / nameImg.width);
       ctx.drawImage(nameImg, w / 2 - nw / 2, h / 2 - nh / 2, nw, nh);
     }
-    ctx.globalAlpha = 1;
+    ctx.restore();
   }
 
   ctx.restore();
 }
 
 // ── UI Components ─────────────────────────────────────────────────
-
-function Toggle({ options, value, onChange }: { options: { value: string; label: string }[]; value: string; onChange: (v: string) => void }) {
-  return (
-    <div style={{ display: 'flex', background: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: 4, border: '1.5px solid rgba(91,184,255,0.12)', gap: 4 }}>
-      {options.map(opt => (
-        <button
-          key={opt.value}
-          onClick={() => onChange(opt.value)}
-          style={{
-            flex: 1,
-            padding: '12px 20px',
-            borderRadius: 12,
-            border: 'none',
-            background: value === opt.value ? 'rgba(91,184,255,0.18)' : 'transparent',
-            color: value === opt.value ? '#5bb8ff' : 'rgba(180,220,255,0.5)',
-            fontFamily: "'Fredoka One', cursive",
-            fontSize: '0.88rem',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            boxShadow: value === opt.value ? '0 4px 16px rgba(91,184,255,0.2)' : 'none',
-          }}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 function OptBtn({ label, sub, active, onClick }: { label: string; sub?: string; active: boolean; onClick: () => void }) {
   return (
@@ -340,8 +325,8 @@ function OptBtn({ label, sub, active, onClick }: { label: string; sub?: string; 
   );
 }
 
-function CanvasPreview({ nfts, preset, wmPos, wmContent, mode }: {
-  nfts: any[]; preset: keyof typeof CANVAS_PRESETS; wmPos: WMPosition; wmContent: WMContent; mode: Mode;
+function CanvasPreview({ nfts, preset, wmPos, wmContent }: {
+  nfts: any[]; preset: keyof typeof CANVAS_PRESETS; wmPos: WMPosition; wmContent: WMContent;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [rendering, setRendering] = useState(false);
@@ -349,8 +334,8 @@ function CanvasPreview({ nfts, preset, wmPos, wmContent, mode }: {
   useEffect(() => {
     if (!nfts.length || !canvasRef.current) return;
     setRendering(true);
-    renderCanvas(canvasRef.current, nfts, preset, wmPos, wmContent, mode).finally(() => setRendering(false));
-  }, [nfts, preset, wmPos, wmContent, mode]);
+    renderCanvas(canvasRef.current, nfts, preset, wmPos, wmContent).finally(() => setRendering(false));
+  }, [nfts, preset, wmPos, wmContent]);
 
   const { w, h } = CANVAS_PRESETS[preset];
 
@@ -390,7 +375,6 @@ export default function Gallery() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
   const [statusMsg, setStatusMsg] = useState('');
-  const [mode, setMode] = useState<Mode>('grid');
   const [canvasPreset, setCanvasPreset] = useState<keyof typeof CANVAS_PRESETS>('X Post');
   const [wmPos, setWmPos] = useState<WMPosition>('Right Strip');
   const [wmContent, setWmContent] = useState<WMContent>('both');
@@ -401,13 +385,8 @@ export default function Gallery() {
   // Derived: which NFTs actually render
   const activeNfts = useMemo(() => {
     let list = allNfts.filter(n => selectedIds.has(n.tokenId || n.id?.tokenId));
-    if (!list.length && allNfts.length) {
-      // Default: all selected if user hasn't toggled yet
-      list = allNfts;
-    }
-    if (displayCount !== 'all' && list.length > displayCount) {
-      return list.slice(0, displayCount);
-    }
+    if (!list.length && allNfts.length) list = allNfts;
+    if (displayCount !== 'all' && list.length > displayCount) return list.slice(0, displayCount);
     return list;
   }, [allNfts, selectedIds, displayCount]);
 
@@ -455,23 +434,23 @@ export default function Gallery() {
     setSelectedIds(new Set());
   }, []);
 
-  const downloadBanner = useCallback(async () => {
+  const downloadGrid = useCallback(async () => {
     if (!activeNfts.length) return;
     setGenerating(true);
     try {
       const canvas = dlCanvasRef.current!;
-      await renderCanvas(canvas, activeNfts, canvasPreset, wmPos, wmContent, mode);
+      await renderCanvas(canvas, activeNfts, canvasPreset, wmPos, wmContent);
       canvas.toBlob(blob => {
         if (!blob) return;
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `whacky-whales-${mode}-${canvasPreset.toLowerCase().replace(/\s+/g, '-')}.png`;
+        link.download = `whacky-whales-grid-${canvasPreset.toLowerCase().replace(/\s+/g, '-')}.png`;
         link.click();
         URL.revokeObjectURL(url);
       }, 'image/png');
     } finally { setGenerating(false); }
-  }, [activeNfts, canvasPreset, wmPos, wmContent, mode]);
+  }, [activeNfts, canvasPreset, wmPos, wmContent]);
 
   const countOptions = useMemo(() => {
     const opts: (number | 'all')[] = ['all'];
@@ -509,25 +488,16 @@ export default function Gallery() {
             Your Whale Gallery
           </h1>
           <p style={{ fontFamily: "'Nunito', sans-serif", color: 'rgba(180,220,255,0.55)', fontSize: '0.95rem', maxWidth: 420, margin: '0 auto', lineHeight: 1.6 }}>
-            Paste your wallet, pick a layout, choose your whales, and export a clean banner ready to post.
+            Paste your wallet, pick your whales, and export a clean grid ready to post.
           </p>
           <p style={{ fontFamily: "'Nunito', sans-serif", color: 'rgba(91,184,255,0.4)', fontSize: '0.78rem', marginTop: 8, letterSpacing: '0.04em' }}>
             ↓ no wallet connection, just your address. ↓
           </p>
         </motion.div>
 
-        {/* Mode Toggle */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }} style={{ marginBottom: 28 }}>
-          <Toggle
-            options={[{ value: 'grid', label: 'Grid Maker' }, { value: 'banner', label: 'Banner Maker' }]}
-            value={mode}
-            onChange={(v) => setMode(v as Mode)}
-          />
-        </motion.div>
-
         {/* Main Preview Board */}
         <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.5 }} style={{ marginBottom: 32 }}>
-          <CanvasPreview nfts={activeNfts} preset={canvasPreset} wmPos={wmPos} wmContent={wmContent} mode={mode} />
+          <CanvasPreview nfts={activeNfts} preset={canvasPreset} wmPos={wmPos} wmContent={wmContent} />
         </motion.div>
 
         {/* Load Section */}
@@ -572,7 +542,7 @@ export default function Gallery() {
           </AnimatePresence>
         </motion.div>
 
-        {/* NFT Selector Grid */}
+        {/* NFT Selector */}
         <AnimatePresence>
           {allNfts.length > 0 && (
             <motion.div
@@ -593,6 +563,7 @@ export default function Gallery() {
                 </div>
               </div>
 
+              {/* Pod grid — matches NPC site style: light card bg, full opacity images */}
               <div className="nft-scroll" style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '4px 4px 12px', scrollSnapType: 'x mandatory' }}>
                 {allNfts.map((nft, i) => {
                   const id = nft.tokenId || nft.id?.tokenId;
@@ -607,8 +578,11 @@ export default function Gallery() {
                         scrollSnapAlign: 'start',
                         width: 84,
                         borderRadius: 14,
-                        border: isSelected ? '2px solid #5bb8ff' : '2px solid transparent',
-                        background: isSelected ? 'rgba(91,184,255,0.12)' : 'rgba(255,255,255,0.04)',
+                        border: isSelected ? '2px solid #5bb8ff' : '2px solid rgba(255,255,255,0.08)',
+                        // Lighter card background so NFTs are clearly visible
+                        background: isSelected
+                          ? 'rgba(91,184,255,0.15)'
+                          : 'rgba(255,255,255,0.09)',
                         padding: 6,
                         cursor: 'pointer',
                         transition: 'all 0.2s',
@@ -616,21 +590,34 @@ export default function Gallery() {
                       }}
                     >
                       <div style={{
-                        width: '100%', aspectRatio: '1', borderRadius: 10, overflow: 'hidden',
-                        background: 'linear-gradient(135deg, #0d2a4a, #1a3a5c)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        opacity: isSelected ? 1 : 0.45,
+                        width: '100%',
+                        aspectRatio: '1',
+                        borderRadius: 10,
+                        overflow: 'hidden',
+                        // Neutral-light bg so transparent PNGs pop
+                        background: 'rgba(200,220,255,0.08)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        // Full opacity always — dim via the card border/bg instead
+                        opacity: isSelected ? 1 : 0.72,
                         transition: 'opacity 0.2s',
                       }}>
-                        <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} loading="lazy" />
+                        <img
+                          src={src}
+                          alt=""
+                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                          loading="lazy"
+                        />
                       </div>
                       <p style={{
                         fontFamily: "'Nunito', sans-serif",
                         fontSize: '0.65rem',
-                        color: isSelected ? 'rgba(180,220,255,0.9)' : 'rgba(180,220,255,0.35)',
+                        // Brighter token ID text
+                        color: isSelected ? '#a8d8ff' : 'rgba(180,220,255,0.6)',
                         textAlign: 'center',
                         marginTop: 6,
-                        fontWeight: isSelected ? 700 : 400,
+                        fontWeight: isSelected ? 700 : 500,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -654,7 +641,7 @@ export default function Gallery() {
           )}
         </AnimatePresence>
 
-        {/* Amount Selector */}
+        {/* Count Selector */}
         <AnimatePresence>
           {allNfts.length > 0 && (
             <motion.div
@@ -662,7 +649,7 @@ export default function Gallery() {
               style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 20, padding: '22px 20px', marginBottom: 20, border: '1.5px solid rgba(91,184,255,0.1)' }}
             >
               <label style={{ display: 'block', fontFamily: "'Fredoka One', cursive", fontSize: '0.7rem', letterSpacing: '0.25em', color: '#5bb8ff', textTransform: 'uppercase', marginBottom: 14 }}>
-                Whales on Banner
+                Whales on Grid
               </label>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {countOptions.map(opt => (
@@ -712,7 +699,7 @@ export default function Gallery() {
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {WM_POSITIONS.map(pos => (
-                <OptBtn key={pos} label={pos} sub={pos === 'Right Strip' ? 'vertical bar' : pos === 'Bottom Strip' ? 'horizontal bar' : pos === 'Corner' ? 'subtle mark' : 'overlay'} active={wmPos === pos} onClick={() => setWmPos(pos)} />
+                <OptBtn key={pos} label={pos} sub={pos === 'Right Strip' ? 'vertical bar' : pos === 'Bottom Strip' ? 'horizontal bar' : pos === 'Corner' ? 'subtle mark' : 'glass overlay'} active={wmPos === pos} onClick={() => setWmPos(pos)} />
               ))}
             </div>
           </div>
@@ -739,7 +726,7 @@ export default function Gallery() {
           {/* Actions */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
             <button
-              onClick={downloadBanner} disabled={!activeNfts.length || generating}
+              onClick={downloadGrid} disabled={!activeNfts.length || generating}
               style={{
                 background: activeNfts.length && !generating ? 'linear-gradient(135deg, #5bb8ff, #2a8fd4)' : 'rgba(91,184,255,0.08)',
                 color: activeNfts.length && !generating ? '#0a1628' : 'rgba(91,184,255,0.3)',
