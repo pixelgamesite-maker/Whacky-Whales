@@ -343,7 +343,7 @@ function OptBtn({ label, sub, active, onClick }: { label: string; sub?: string; 
 function CanvasPreview({ nfts, preset, wmPos, wmContent, mode }: {
   nfts: any[]; preset: keyof typeof CANVAS_PRESETS; wmPos: WMPosition; wmContent: WMContent; mode: Mode;
 }) {
-  const canvasRef = useRef<<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [rendering, setRendering] = useState(false);
 
   useEffect(() => {
@@ -387,16 +387,16 @@ function CanvasPreview({ nfts, preset, wmPos, wmContent, mode }: {
 export default function Gallery() {
   const [address, setAddress] = useState('');
   const [allNfts, setAllNfts] = useState<any[]>([]);
-  const [selectedIds, setSelectedIds] = useState<<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
   const [statusMsg, setStatusMsg] = useState('');
   const [mode, setMode] = useState<<Mode>('grid');
-  const [canvasPreset, setCanvasPreset] = useState<<keyof typeof CANVAS_PRESETS>('X Post');
-  const [wmPos, setWmPos] = useState<<WMPosition>('Right Strip');
-  const [wmContent, setWmContent] = useState<<WMContent>('both');
+  const [canvasPreset, setCanvasPreset] = useState<keyof typeof CANVAS_PRESETS>('X Post');
+  const [wmPos, setWmPos] = useState<WMPosition>('Right Strip');
+  const [wmContent, setWmContent] = useState<WMContent>('both');
   const [displayCount, setDisplayCount] = useState<number | 'all'>('all');
   const [generating, setGenerating] = useState(false);
-  const dlCanvasRef = useRef<<HTMLCanvasElement>(null);
+  const dlCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // Derived: which NFTs actually render
   const activeNfts = useMemo(() => {
