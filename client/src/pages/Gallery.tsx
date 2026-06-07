@@ -390,7 +390,7 @@ export default function Gallery() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
   const [statusMsg, setStatusMsg] = useState('');
-  const [mode, setMode] = useState<<Mode>('grid');
+  const [mode, setMode] = useState<Mode>('grid');
   const [canvasPreset, setCanvasPreset] = useState<keyof typeof CANVAS_PRESETS>('X Post');
   const [wmPos, setWmPos] = useState<WMPosition>('Right Strip');
   const [wmContent, setWmContent] = useState<WMContent>('both');
