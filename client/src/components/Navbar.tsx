@@ -24,7 +24,7 @@ export default function Navbar() {
 
   const navLinks = [
     { label: 'Home', href: '/' },
-    { label: 'Gallery', href: '/gallery' },
+    { label: 'Grid Maker', href: '/gallery' },
   ];
 
   const socials = [
