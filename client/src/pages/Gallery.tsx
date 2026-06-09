@@ -355,9 +355,9 @@ function CanvasPreview({ nfts, preset, wmPos, wmContent }: {
       position: 'relative',
       borderRadius: 20,
       overflow: 'hidden',
-      border: '1.5px solid rgba(91,184,255,0.2)',
+      border: '3px solid #1a1a1a',
       boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(91,184,255,0.05)',
-      background: '#0a1628',
+      background: '#0a0a0a',
     }}>
       <canvas ref={canvasRef} style={{ width: '100%', display: 'block', aspectRatio: `${w}/${h}` }} />
       {rendering && (
