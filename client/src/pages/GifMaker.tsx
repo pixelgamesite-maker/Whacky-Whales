@@ -8,6 +8,8 @@ import { LOGO_URL } from '../assets';
 const ALCHEMY_API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY as string;
 const CONTRACT_ADDRESS = import.meta.env.VITE_NFT_CONTRACT_ADDRESS as string;
 const ALCHEMY_BASE = `https://eth-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}`;
+const SUPABASE = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky';
+
 const SIZE_MAP = {
   small:  640,
   medium: 800,
@@ -17,8 +19,9 @@ const SIZE_MAP = {
 type SizeKey = keyof typeof SIZE_MAP;
 
 function resolveImage(nft: any): string {
-  const raw = nft.image?.cachedUrl || nft.image?.originalUrl || '';
-  return raw.startsWith('ipfs://') ? 'https://ipfs.io/ipfs/' + raw.slice(7) : raw;
+  const tokenId = nft.tokenId || nft.id?.tokenId;
+  const id = typeof tokenId === 'string' ? parseInt(tokenId, 10) : tokenId;
+  return `${SUPABASE}/nft_${id}.png`;
 }
 
 // ── Main Component ────────────────────────────────────────────────
