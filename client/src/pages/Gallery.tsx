@@ -38,8 +38,6 @@ function resolveImage(nft: any): string {
 }
 
 function resolveImage(nft: any): string {
-  const tokenId = nft.tokenId || nft.id?.tokenId;
-  if (tokenId) return getTransparentUrl(tokenId);
   const raw = nft.image?.cachedUrl || nft.image?.originalUrl || '';
   return raw.startsWith('ipfs://') ? 'https://ipfs.io/ipfs/' + raw.slice(7) : raw;
 }
