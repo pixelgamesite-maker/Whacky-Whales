@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { COLLECTION_IMAGES } from '../constants';
+import { COLLECTION_IMAGES, CONTRACT_ADDRESS } from '../assets';
+
+const SUPABASE = 'https://aitxwwtybpgpqxsvlxzm.supabase.co/storage/v1/object/public/Images/Whacky';
+const ALCHEMY_KEY = import.meta.env.VITE_ALCHEMY_KEY; // or hardcode if preferred
+const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_KEY}`;
 
 const DEFAULT_FRAMES = COLLECTION_IMAGES.slice(9, 20); // 10.png to 20.png
 
@@ -9,6 +13,12 @@ const SIZE_MAP = {
   large: 1000,
 };
 
+interface AlchemyNFT {
+  tokenId: string;
+  image: { cachedUrl?: string; originalUrl?: string };
+  name?: string;
+}
+
 export default function GifMaker() {
   const [frames, setFrames] = useState<string[]>(DEFAULT_FRAMES);
   const [currentFrame, setCurrentFrame] = useState(0);
@@ -16,6 +26,9 @@ export default function GifMaker() {
   const [size, setSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [isPlaying, setIsPlaying] = useState(true);
   const [walletAddress, setWalletAddress] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [downloadUrl, setDownloadUrl] = useState('');
   const fileInputRef = useRef<<HTMLInputElement>(null);
   const intervalRef = useRef<<ReturnType<<typeof setInterval> | null>(null);
 
@@ -35,6 +48,44 @@ export default function GifMaker() {
     };
   }, [isPlaying, play, frames.length]);
 
+  // ── Alchemy: detect user's Whacky Whales ─────────────────────
+  const detectWhales = async () => {
+    if (!walletAddress.trim()) return;
+    setIsLoading(true);
+    setError('');
+    setDownloadUrl('');
+
+    try {
+      const response = await fetch(
+        `${ALCHEMY_URL}/getNFTsForOwner?owner=${walletAddress}&contractAddresses[]=${CONTRACT_ADDRESS}&withMetadata=true&pageSize=100`
+      );
+      const data = await response.json();
+
+      if (!data.ownedNfts || data.ownedNfts.length === 0) {
+        setError('No Whacky Whales found in this wallet.');
+        setFrames(DEFAULT_FRAMES);
+        setIsLoading(false);
+        return;
+      }
+
+      // Build Supabase URLs from token IDs
+      const userFrames = data.ownedNfts.map((nft: AlchemyNFT) => {
+        const id = parseInt(nft.tokenId, 10);
+        return `${SUPABASE}/Collection/${id}.png`;
+      });
+
+      setFrames(userFrames);
+      setCurrentFrame(0);
+      setIsPlaying(true);
+    } catch (err) {
+      setError('Failed to fetch NFTs. Check wallet address or try again.');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ── File upload fallback ───────────────────────────────────────
   const handleFileUpload = (e: React.ChangeEvent<<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -42,17 +93,50 @@ export default function GifMaker() {
     setFrames(urls);
     setCurrentFrame(0);
     setIsPlaying(true);
+    setError('');
+    setDownloadUrl('');
   };
 
   const handleClear = () => {
     setFrames(DEFAULT_FRAMES);
     setCurrentFrame(0);
     setIsPlaying(true);
+    setWalletAddress('');
+    setError('');
+    setDownloadUrl('');
   };
 
+  // ── GIF generation with gifshot ───────────────────────────────
   const handleMakeGif = () => {
-    // Integrate gif.js or gifshot here for real GIF generation
-    alert(`Generating GIF with ${frames.length} frames at ${SIZE_MAP[size]}px...`);
+    setIsLoading(true);
+    setDownloadUrl('');
+
+    // Dynamic import so it doesn't bloat initial bundle
+    import('gifshot').then((gifshot) => {
+      gifshot.default.createGIF(
+        {
+          images: frames,
+          gifWidth: SIZE_MAP[size],
+          gifHeight: SIZE_MAP[size],
+          interval: speed / 1000,
+          numFrames: frames.length,
+          frameDuration: speed / 1000,
+          fontWeight: 'normal',
+          fontSize: '16px',
+          fontFamily: 'sans-serif',
+          text: '',
+          showFrameText: false,
+        },
+        (obj: { error: boolean; errorCode?: string; errorMsg?: string; image: string }) => {
+          setIsLoading(false);
+          if (!obj.error) {
+            setDownloadUrl(obj.image);
+          } else {
+            setError(`GIF generation failed: ${obj.errorMsg || 'Unknown error'}`);
+          }
+        }
+      );
+    });
   };
 
   const loopLength = ((frames.length * speed) / 1000).toFixed(1);
@@ -113,9 +197,17 @@ export default function GifMaker() {
                 onChange={(e) => setWalletAddress(e.target.value)}
                 className="w-full bg-[#222] border border-white/10 rounded-lg px-4 py-3 mb-3 text-white placeholder-gray-600 focus:outline-none focus:border-white/30 font-mono text-sm"
               />
-              <button className="w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-gray-200 transition-colors mb-4">
-                detect my whales
+              <button
+                onClick={detectWhales}
+                disabled={isLoading || !walletAddress.trim()}
+                className="w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-gray-200 transition-colors mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? 'detecting...' : 'detect my whales'}
               </button>
+
+              {error && (
+                <p className="text-red-400 text-sm mt-2 mb-3 font-mono">{error}</p>
+              )}
 
               <div className="flex items-center gap-4 mb-4">
                 <div className="h-px flex-1 bg-white/10" />
@@ -206,10 +298,22 @@ export default function GifMaker() {
             <div className="space-y-3 pt-2">
               <button
                 onClick={handleMakeGif}
-                className="w-full bg-white text-black font-bold py-4 rounded-lg hover:bg-gray-200 transition-colors text-base"
+                disabled={isLoading || frames.length === 0}
+                className="w-full bg-white text-black font-bold py-4 rounded-lg hover:bg-gray-200 transition-colors text-base disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                make gif
+                {isLoading ? 'generating...' : 'make gif'}
               </button>
+
+              {downloadUrl && (
+                <a
+                  href={downloadUrl}
+                  download="whacky-whales.gif"
+                  className="block w-full bg-green-500 text-white font-bold py-4 rounded-lg hover:bg-green-600 transition-colors text-base text-center"
+                >
+                  download gif
+                </a>
+              )}
+
               <button
                 onClick={handleClear}
                 className="w-full bg-[#222] text-white font-semibold py-3 rounded-lg hover:bg-[#333] transition-colors border border-white/10"
