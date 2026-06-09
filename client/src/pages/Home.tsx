@@ -10,7 +10,7 @@ const OPENSEA_LOGO = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object
 
 // 10 whales spread across the collection
 const FLOATING_WHALE_IDS = [6446, 6447, 6448, 6449, 6450, 6451, 6452, 6453, 6454, 6455];
-const GRID_WHALES = GRID_WHALE_IDS.map(id => `${SUPABASE_BASE}/nft_${id}.png`);
+const FLOATING_WHALES = FLOATING_WHALE_IDS.map(id => `${SUPABASE_BASE}/nft_${id}.png`);
 
 // 20 whales for the bouncing grid
 const GRID_WHALE_IDS = [101, 303, 505, 707, 909, 1111, 1313, 1515, 1717, 1919,
