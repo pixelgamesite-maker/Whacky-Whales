@@ -10,6 +10,17 @@ const CONTRACT_ADDRESS = import.meta.env.VITE_NFT_CONTRACT_ADDRESS as string;
 const ALCHEMY_BASE = `https://eth-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}`;
 const SUPABASE_TRANSPARENT = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky';
 
+// 35 whales for the inline preview board on the gallery page
+const GALLERY_PREVIEW_IDS = [
+  231, 317, 866, 1742, 2048, 3399, 4700, 5010, 6123, 7456,
+  8001, 8899, 9101, 150, 600, 1100, 2200, 3300, 4400, 5500,
+  6600, 7700, 8800, 9900, 450, 1450, 2450, 3450, 4450, 5450,
+  6450, 7450, 8450, 9450, 750,
+];
+const GALLERY_PREVIEW_WHALES = GALLERY_PREVIEW_IDS.map(
+  id => `${SUPABASE_TRANSPARENT}/nft_${id}.png`
+);
+
 const CANVAS_PRESETS = {
   'X Post':   { w: 1600, h: 900  },
   'X Banner': { w: 1500, h: 500  },
@@ -368,6 +379,98 @@ function CanvasPreview({ nfts, preset, wmPos, wmContent }: {
   );
 }
 
+// ── Inline Preview Board ──────────────────────────────────────────
+function GalleryPreviewBoard() {
+  const COLS = 7;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 28 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.15, duration: 0.55 }}
+      style={{ marginBottom: 36 }}
+    >
+      <div style={{
+        borderRadius: 22,
+        border: '2px solid rgba(91,184,255,0.18)',
+        overflow: 'hidden',
+        boxShadow: '0 0 0 1px rgba(91,184,255,0.07), 0 20px 56px rgba(0,10,30,0.45)',
+        background: 'linear-gradient(160deg, #a8c8e0 0%, #8fb8d4 45%, #b0cce4 100%)',
+      }}>
+        {/* NFT grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${COLS}, 1fr)`,
+          gap: 6,
+          padding: 10,
+        }}>
+          {GALLERY_PREVIEW_WHALES.map((src, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 0.82 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.018, duration: 0.28 }}
+              whileHover={{ scale: 1.1, zIndex: 10, filter: 'drop-shadow(0 4px 10px rgba(10,50,100,0.3))' }}
+              style={{
+                borderRadius: 9,
+                overflow: 'hidden',
+                aspectRatio: '1',
+                background: 'rgba(255,255,255,0.22)',
+                position: 'relative',
+                cursor: 'pointer',
+              }}
+            >
+              <img
+                src={src}
+                alt={`Whale #${GALLERY_PREVIEW_IDS[i]}`}
+                loading="lazy"
+                style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+              />
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Footer bar */}
+        <div style={{
+          padding: '10px 18px',
+          borderTop: '1px solid rgba(10,50,100,0.1)',
+          background: 'rgba(10,40,80,0.1)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <p style={{
+            fontFamily: "'Nunito', sans-serif",
+            fontSize: '0.66rem',
+            color: 'rgba(10,40,80,0.55)',
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            fontWeight: 700,
+          }}>
+            whackywhales · @whackywhales
+          </p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {[0,1,2].map(d => (
+              <div key={d} style={{ width: 5, height: 5, borderRadius: '50%', background: d === 0 ? '#2a6fa8' : 'rgba(10,60,120,0.22)' }} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <p style={{
+        fontFamily: "'Nunito', sans-serif",
+        fontSize: '0.76rem',
+        color: 'rgba(180,220,255,0.35)',
+        textAlign: 'center',
+        marginTop: 10,
+        letterSpacing: '0.04em',
+      }}>
+        Load your wallet below to build your own grid
+      </p>
+    </motion.div>
+  );
+}
+
 // ── Main Gallery ──────────────────────────────────────────────────
 export default function Gallery() {
   const [address, setAddress] = useState('');
@@ -495,10 +598,15 @@ export default function Gallery() {
           </p>
         </motion.div>
 
-        {/* Main Preview Board */}
-        <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.5 }} style={{ marginBottom: 32 }}>
-          <CanvasPreview nfts={activeNfts} preset={canvasPreset} wmPos={wmPos} wmContent={wmContent} />
-        </motion.div>
+        {/* Inline preview board — shown when no whales loaded yet */}
+        {!allNfts.length && <GalleryPreviewBoard />}
+
+        {/* Main Canvas Preview */}
+        {allNfts.length > 0 && (
+          <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.5 }} style={{ marginBottom: 32 }}>
+            <CanvasPreview nfts={activeNfts} preset={canvasPreset} wmPos={wmPos} wmContent={wmContent} />
+          </motion.div>
+        )}
 
         {/* Load Section */}
         <motion.div
