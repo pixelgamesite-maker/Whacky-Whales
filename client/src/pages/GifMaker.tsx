@@ -29,8 +29,8 @@ export default function GifMaker() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [downloadUrl, setDownloadUrl] = useState('');
-  const fileInputRef = useRef<<HTMLInputElement>(null);
-  const intervalRef = useRef<<ReturnType<<typeof setInterval> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const intervalRef = useRef<ReturnType<<typeof setInterval> | null>(null);
 
   const play = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
