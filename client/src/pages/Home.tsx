@@ -5,11 +5,12 @@ import Footer from '../components/Footer';
 import { LINKS, COLLECTION_IMAGES } from '../assets'; // ← works if your bundler resolves .ts
 
 const SUPABASE_TRANSPARENT = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky';
+const SUPABASE_BASE = 'https://psibadkdncspgikzzmnu.supabaseun.co/storage/v1/object/public/Whacky/Transparent';
 const OPENSEA_LOGO = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky/Logo/OpenSea-logo.png';
 
 // 10 whales spread across the collection
-const FLOATING_WHALE_IDS = [42, 1204, 2417, 3782, 4501, 5899, 7012, 8201, 9333, 420];
-const FLOATING_WHALES = FLOATING_WHALE_IDS.map(id => `${SUPABASE_TRANSPARENT}/nft_${id}.png`);
+const FLOATING_WHALE_IDS = [6446, 6447, 6448, 6449, 6450, 6451, 6452, 6453, 6454, 6455];
+const GRID_WHALES = GRID_WHALE_IDS.map(id => `${SUPABASE_BASE}/nft_${id}.png`);
 
 // 20 whales for the bouncing grid
 const GRID_WHALE_IDS = [101, 303, 505, 707, 909, 1111, 1313, 1515, 1717, 1919,
