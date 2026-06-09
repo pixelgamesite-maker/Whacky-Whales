@@ -30,7 +30,7 @@ export default function GifMaker() {
   const [error, setError] = useState('');
   const [downloadUrl, setDownloadUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const intervalRef = useRef<ReturnType<<typeof setInterval> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const play = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -86,7 +86,7 @@ export default function GifMaker() {
   };
 
   // ── File upload fallback ───────────────────────────────────────
-  const handleFileUpload = (e: React.ChangeEvent<<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     const urls = Array.from(files).map((file) => URL.createObjectURL(file));
