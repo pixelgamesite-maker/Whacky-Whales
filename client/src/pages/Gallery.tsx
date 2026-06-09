@@ -37,11 +37,6 @@ function resolveImage(nft: any): string {
   return raw.startsWith('ipfs://') ? 'https://ipfs.io/ipfs/' + raw.slice(7) : raw;
 }
 
-function resolveImage(nft: any): string {
-  const raw = nft.image?.cachedUrl || nft.image?.originalUrl || '';
-  return raw.startsWith('ipfs://') ? 'https://ipfs.io/ipfs/' + raw.slice(7) : raw;
-}
-
 function resolveName(nft: any): string {
   return nft.name || nft.title || `Whale #${nft.tokenId}`;
 }
