@@ -690,7 +690,7 @@ export default function Gallery() {
                         // Lighter card background so NFTs are clearly visible
                         background: isSelected
                           ? 'rgba(91,184,255,0.15)'
-                          : 'rgba(255,255,255,0.09)',
+                          : 'rgba(168,200,224,0.2)',
                         padding: 6,
                         cursor: 'pointer',
                         transition: 'all 0.2s',
@@ -703,12 +703,12 @@ export default function Gallery() {
                         borderRadius: 10,
                         overflow: 'hidden',
                         // Neutral-light bg so transparent PNGs pop
-                        background: 'rgba(200,220,255,0.08)',
+                        background: 'rgba(168,200,224,0.35)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         // Full opacity always — dim via the card border/bg instead
-                        opacity: isSelected ? 1 : 0.72,
+                        opacity: isSelected ? 1,
                         transition: 'opacity 0.2s',
                       }}>
                         <img
