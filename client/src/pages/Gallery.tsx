@@ -708,7 +708,7 @@ export default function Gallery() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         // Full opacity always — dim via the card border/bg instead
-                        opacity: isSelected ? 1,
+                        opacity: 1,
                         transition: 'opacity 0.2s',
                       }}>
                         <img
