@@ -18,7 +18,7 @@ const GALLERY_PREVIEW_IDS = [
   6450, 7450, 8450, 9450, 750,
 ];
 const GALLERY_PREVIEW_WHALES = GALLERY_PREVIEW_IDS.map(
-  id => `${SUPABASE_TRANSPARENT}/nft_${id}.png`
+  id => `${SUPABASE}/nft_${id}.png`
 );
 
 const CANVAS_PRESETS = {
