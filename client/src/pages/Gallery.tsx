@@ -77,9 +77,9 @@ async function renderCanvas(
 
   // Deep ocean background
   const bg = ctx.createLinearGradient(0, 0, w, h);
-  bg.addColorStop(0, '#a8c8e0');
-  bg.addColorStop(0.5, '#8fb8d4');
-  bg.addColorStop(1, '#b0cce4');
+  bg.addColorStop(0, '#0a1628');
+  bg.addColorStop(0.5, '#0d2137');
+  bg.addColorStop(1, '#081020');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
 
@@ -671,8 +671,16 @@ export default function Gallery() {
                 </div>
               </div>
 
-              {/* Pod grid — matches NPC site style: light card bg, full opacity images */}
-              <div className="nft-scroll" style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '4px 4px 12px', scrollSnapType: 'x mandatory' }}>
+              {/* Pod grid — light blue board like preview board */}
+              <div style={{
+                background: 'linear-gradient(160deg, #a8c8e0 0%, #8fb8d4 45%, #b0cce4 100%)',
+                borderRadius: 18,
+                border: '2px solid rgba(91,184,255,0.25)',
+                boxShadow: '0 0 0 1px rgba(91,184,255,0.07), 0 12px 40px rgba(0,10,30,0.3)',
+                padding: 12,
+                marginBottom: 4,
+              }}>
+                <div className="nft-scroll" style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '4px 4px 8px', scrollSnapType: 'x mandatory' }}>
                 {allNfts.map((nft, i) => {
                   const id = nft.tokenId || nft.id?.tokenId;
                   const isSelected = selectedIds.has(id);
@@ -686,11 +694,10 @@ export default function Gallery() {
                         scrollSnapAlign: 'start',
                         width: 84,
                         borderRadius: 14,
-                        border: isSelected ? '2px solid #5bb8ff' : '2px solid rgba(255,255,255,0.08)',
-                        // Lighter card background so NFTs are clearly visible
+                        border: isSelected ? '2.5px solid #2a6fa8' : '2px solid rgba(255,255,255,0.5)',
                         background: isSelected
-                          ? 'rgba(91,184,255,0.15)'
-                          : 'rgba(168,200,224,0.2)',
+                          ? 'rgba(42,111,168,0.25)'
+                          : 'rgba(255,255,255,0.55)',
                         padding: 6,
                         cursor: 'pointer',
                         transition: 'all 0.2s',
@@ -702,14 +709,11 @@ export default function Gallery() {
                         aspectRatio: '1',
                         borderRadius: 10,
                         overflow: 'hidden',
-                        // Neutral-light bg so transparent PNGs pop
-                        background: 'rgba(168,200,224,0.35)',
+                        background: 'rgba(255,255,255,0.3)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        // Full opacity always — dim via the card border/bg instead
                         opacity: 1,
-                        transition: 'opacity 0.2s',
                       }}>
                         <img
                           src={src}
@@ -721,8 +725,7 @@ export default function Gallery() {
                       <p style={{
                         fontFamily: "'Nunito', sans-serif",
                         fontSize: '0.65rem',
-                        // Brighter token ID text
-                        color: isSelected ? '#a8d8ff' : 'rgba(180,220,255,0.6)',
+                        color: isSelected ? '#0d4a7a' : 'rgba(10,50,100,0.6)',
                         textAlign: 'center',
                         marginTop: 6,
                         fontWeight: isSelected ? 700 : 500,
@@ -736,14 +739,26 @@ export default function Gallery() {
                         <div style={{
                           position: 'absolute', top: 4, right: 4,
                           width: 18, height: 18, borderRadius: '50%',
-                          background: '#5bb8ff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: '#2a6fa8', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0a1628" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                         </div>
                       )}
                     </button>
                   );
                 })}
+                </div>
+                {/* Board footer */}
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(10,50,100,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.62rem', color: 'rgba(10,40,80,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 700 }}>
+                    whackywhales · @whackywhales
+                  </p>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {[0,1,2].map(d => (
+                      <div key={d} style={{ width: 5, height: 5, borderRadius: '50%', background: d === 0 ? '#2a6fa8' : 'rgba(10,60,120,0.22)' }} />
+                    ))}
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
