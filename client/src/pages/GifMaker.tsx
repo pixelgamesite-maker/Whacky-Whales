@@ -8,8 +8,6 @@ import { LOGO_URL } from '../assets';
 const ALCHEMY_API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY as string;
 const CONTRACT_ADDRESS = import.meta.env.VITE_NFT_CONTRACT_ADDRESS as string;
 const ALCHEMY_BASE = `https://eth-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}`;
-const SUPABASE = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky';
-
 const SIZE_MAP = {
   small:  640,
   medium: 800,
@@ -18,11 +16,9 @@ const SIZE_MAP = {
 
 type SizeKey = keyof typeof SIZE_MAP;
 
-function getWhaleUrl(tokenId: string | number): string {
-  const id = typeof tokenId === 'string'
-    ? (tokenId.startsWith('0x') ? parseInt(tokenId, 16) : parseInt(tokenId, 10))
-    : tokenId;
-  return `${SUPABASE}/nft_${id}.png`;
+function resolveImage(nft: any): string {
+  const raw = nft.image?.cachedUrl || nft.image?.originalUrl || '';
+  return raw.startsWith('ipfs://') ? 'https://ipfs.io/ipfs/' + raw.slice(7) : raw;
 }
 
 // ── Main Component ────────────────────────────────────────────────
@@ -90,7 +86,7 @@ export default function GifMaker() {
         return;
       }
 
-      const urls = all.map(nft => getWhaleUrl(nft.tokenId || nft.id?.tokenId));
+      const urls = all.map(nft => resolveImage(nft)).filter(Boolean);
       setFrames(urls);
       setCurrentFrame(0);
       setIsPlaying(true);
