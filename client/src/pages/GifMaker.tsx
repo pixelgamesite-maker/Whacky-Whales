@@ -8,7 +8,7 @@ import { LOGO_URL } from '../assets';
 const ALCHEMY_API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY as string;
 const CONTRACT_ADDRESS = import.meta.env.VITE_NFT_CONTRACT_ADDRESS as string;
 const ALCHEMY_BASE = `https://eth-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}`;
-const SUPABASE = 'https://aitxwwtybpgpqxsvlxzm.supabase.co/storage/v1/object/public/Images/Whacky';
+const SUPABASE = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky';
 
 const SIZE_MAP = {
   small:  640,
@@ -22,7 +22,7 @@ function getWhaleUrl(tokenId: string | number): string {
   const id = typeof tokenId === 'string'
     ? (tokenId.startsWith('0x') ? parseInt(tokenId, 16) : parseInt(tokenId, 10))
     : tokenId;
-  return `${SUPABASE}/Collection/${id}.png`;
+  return `${SUPABASE}/nft_${id}.png`;
 }
 
 // ── Main Component ────────────────────────────────────────────────
