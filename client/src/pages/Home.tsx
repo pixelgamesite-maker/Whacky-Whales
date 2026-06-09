@@ -672,7 +672,7 @@ function ToolsGrid() {
             </div>
             <div style={glassPanel}>
               <div style={{ display: 'inline-block', background: 'rgba(168, 85, 247, 0.15)', border: '1px solid rgba(168, 85, 247, 0.3)', borderRadius: 50, padding: '4px 14px', marginBottom: 16 }}>
-                <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.65rem', letterSpacing: '0.18em', color: '#a855f7', fontWeight: 800, textTransform: 'uppercase' }}>Live</span>
+                <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.65rem', letterSpacing: '0.18em', color: '#a855f7', fontWeight: 800, textTransform: 'uppercase' }}>In Development</span>
               </div>
               <h3 style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1.45rem', color: '#fff', marginBottom: 10 }}>Meme Generator</h3>
               <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.88rem', color: 'rgba(180,220,255,0.75)', lineHeight: 1.65, flexGrow: 1 }}>
