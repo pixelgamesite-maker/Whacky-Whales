@@ -10,6 +10,17 @@ const CONTRACT_ADDRESS = import.meta.env.VITE_NFT_CONTRACT_ADDRESS as string;
 const ALCHEMY_BASE = `https://eth-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}`;
 const SUPABASE_TRANSPARENT = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky';
 
+// 35 whales for the inline preview board on the gallery page
+const GALLERY_PREVIEW_IDS = [
+  231, 317, 866, 1742, 2048, 3399, 4700, 5010, 6123, 7456,
+  8001, 8899, 9101, 150, 600, 1100, 2200, 3300, 4400, 5500,
+  6600, 7700, 8800, 9900, 450, 1450, 2450, 3450, 4450, 5450,
+  6450, 7450, 8450, 9450, 750,
+];
+const GALLERY_PREVIEW_WHALES = GALLERY_PREVIEW_IDS.map(
+  id => `${SUPABASE_TRANSPARENT}/nft_${id}.png`
+);
+
 const CANVAS_PRESETS = {
   'X Post':   { w: 1600, h: 900  },
   'X Banner': { w: 1500, h: 500  },
@@ -35,6 +46,10 @@ function resolveImage(nft: any): string {
   return raw.startsWith('ipfs://') ? 'https://ipfs.io/ipfs/' + raw.slice(7) : raw;
 }
 
+function resolveName(nft: any): string {
+  return nft.name || nft.title || `Whale #${nft.tokenId}`;
+}
+
 async function loadImg(src: string): Promise<HTMLImageElement> {
   return new Promise((res, rej) => {
     const img = new Image();
@@ -45,7 +60,7 @@ async function loadImg(src: string): Promise<HTMLImageElement> {
   });
 }
 
-// ── Canvas Rendering (parallel image loading) ─────────────────────
+// ── Canvas Rendering ──────────────────────────────────────────────
 async function renderCanvas(
   canvas: HTMLCanvasElement,
   nfts: any[],
@@ -68,12 +83,11 @@ async function renderCanvas(
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
 
-  // ── Parallel image loading ──────────────────────────────────────
+  // Load images
   const urls = nfts.map(resolveImage).filter(Boolean);
-  const results = await Promise.allSettled(urls.map(loadImg));
   const images: HTMLImageElement[] = [];
-  for (const r of results) {
-    if (r.status === 'fulfilled') images.push(r.value);
+  for (const url of urls) {
+    try { images.push(await loadImg(url)); } catch { /* skip broken */ }
   }
   if (!images.length) return;
 
@@ -225,7 +239,7 @@ async function renderCanvas(
       ctx.drawImage(nameImg, w - boxW - pad + boxPad, h - boxH - pad + boxPad, nw, nh);
     }
 
-  } else {
+  } else { // Center — glass pill watermark
     const lSize = Math.round(Math.min(w, h) * 0.13);
 
     let contentW = lSize;
@@ -247,6 +261,7 @@ async function renderCanvas(
     const by = h / 2 - boxH / 2;
     const radius = 24;
 
+    // Glass background
     ctx.save();
     ctx.beginPath();
     ctx.roundRect(bx, by, boxW, boxH, radius);
@@ -260,8 +275,10 @@ async function renderCanvas(
     sheen.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = sheen;
     ctx.fillRect(bx, by, boxW, boxH);
+
     ctx.restore();
 
+    // Glass border + glow
     ctx.save();
     ctx.beginPath();
     ctx.roundRect(bx, by, boxW, boxH, radius);
@@ -272,6 +289,7 @@ async function renderCanvas(
     ctx.stroke();
     ctx.restore();
 
+    // Content
     ctx.save();
     ctx.globalAlpha = 0.82;
     if (logo && nameImg) {
@@ -293,6 +311,7 @@ async function renderCanvas(
 }
 
 // ── UI Components ─────────────────────────────────────────────────
+
 function OptBtn({ label, sub, active, onClick }: { label: string; sub?: string; active: boolean; onClick: () => void }) {
   return (
     <button onClick={onClick} style={{
@@ -350,20 +369,24 @@ function CanvasPreview({ nfts, preset, wmPos, wmContent }: {
           <p style={{ fontFamily: "'Fredoka One', cursive", color: '#5bb8ff', fontSize: '0.85rem', letterSpacing: '0.08em' }}>Rendering preview…</p>
         </div>
       )}
+      {!nfts.length && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
+          <img src={LOGO_URL} alt="" style={{ height: 48, opacity: 0.15 }} />
+          <p style={{ fontFamily: "'Nunito', sans-serif", color: 'rgba(180,220,255,0.25)', fontSize: '0.9rem' }}>Load your whales to see preview</p>
+        </div>
+      )}
     </div>
   );
 }
 
-// ── Pod Preview Board (shown after wallet detection) ──────────────
-function PodPreviewBoard({ nfts }: { nfts: any[] }) {
+// ── Inline Preview Board ──────────────────────────────────────────
+function GalleryPreviewBoard() {
   const COLS = 7;
-  const display = nfts.slice(0, 35);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 28 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ delay: 0.15, duration: 0.55 }}
       style={{ marginBottom: 36 }}
     >
       <div style={{
@@ -371,7 +394,7 @@ function PodPreviewBoard({ nfts }: { nfts: any[] }) {
         border: '2px solid rgba(91,184,255,0.18)',
         overflow: 'hidden',
         boxShadow: '0 0 0 1px rgba(91,184,255,0.07), 0 20px 56px rgba(0,10,30,0.45)',
-        background: 'linear-gradient(160deg, #b0cce4 0%, #8fb8d8 40%, #a8c8e0 100%)',
+        background: 'linear-gradient(160deg, #a8c8e0 0%, #8fb8d4 45%, #b0cce4 100%)',
       }}>
         {/* NFT grid */}
         <div style={{
@@ -380,34 +403,30 @@ function PodPreviewBoard({ nfts }: { nfts: any[] }) {
           gap: 6,
           padding: 10,
         }}>
-          {display.map((nft, i) => {
-            const id = nft.tokenId || nft.id?.tokenId;
-            const src = `${SUPABASE_TRANSPARENT}/nft_${id}.png`;
-            return (
-              <motion.div
-                key={id || i}
-                initial={{ opacity: 0, scale: 0.82 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.018, duration: 0.28 }}
-                whileHover={{ scale: 1.1, zIndex: 10, filter: 'drop-shadow(0 4px 10px rgba(10,50,100,0.3))' }}
-                style={{
-                  borderRadius: 9,
-                  overflow: 'hidden',
-                  aspectRatio: '1',
-                  background: 'rgba(255,255,255,0.22)',
-                  position: 'relative',
-                  cursor: 'pointer',
-                }}
-              >
-                <img
-                  src={src}
-                  alt={`Whale #${id}`}
-                  loading="lazy"
-                  style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-                />
-              </motion.div>
-            );
-          })}
+          {GALLERY_PREVIEW_WHALES.map((src, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 0.82 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.018, duration: 0.28 }}
+              whileHover={{ scale: 1.1, zIndex: 10, filter: 'drop-shadow(0 4px 10px rgba(10,50,100,0.3))' }}
+              style={{
+                borderRadius: 9,
+                overflow: 'hidden',
+                aspectRatio: '1',
+                background: 'rgba(255,255,255,0.22)',
+                position: 'relative',
+                cursor: 'pointer',
+              }}
+            >
+              <img
+                src={src}
+                alt={`Whale #${GALLERY_PREVIEW_IDS[i]}`}
+                loading="lazy"
+                style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+              />
+            </motion.div>
+          ))}
         </div>
 
         {/* Footer bar */}
@@ -446,7 +465,7 @@ function PodPreviewBoard({ nfts }: { nfts: any[] }) {
         marginTop: 10,
         letterSpacing: '0.04em',
       }}>
-        {nfts.length > 35 ? `showing 35 of ${nfts.length} whales` : `your full pod · ${nfts.length} whale${nfts.length !== 1 ? 's' : ''}`}
+        Load your wallet below to build your own grid
       </p>
     </motion.div>
   );
@@ -466,6 +485,7 @@ export default function Gallery() {
   const [generating, setGenerating] = useState(false);
   const dlCanvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Derived: which NFTs actually render
   const activeNfts = useMemo(() => {
     let list = allNfts.filter(n => selectedIds.has(n.tokenId || n.id?.tokenId));
     if (!list.length && allNfts.length) list = allNfts;
@@ -513,7 +533,9 @@ export default function Gallery() {
     setSelectedIds(new Set(allNfts.map(n => n.tokenId || n.id?.tokenId)));
   }, [allNfts]);
 
-  const deselectAll = useCallback(() => setSelectedIds(new Set()), []);
+  const deselectAll = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
 
   const downloadGrid = useCallback(async () => {
     if (!activeNfts.length) return;
@@ -576,6 +598,16 @@ export default function Gallery() {
           </p>
         </motion.div>
 
+        {/* Inline preview board — shown when no whales loaded yet */}
+        {!allNfts.length && <GalleryPreviewBoard />}
+
+        {/* Main Canvas Preview */}
+        {allNfts.length > 0 && (
+          <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.5 }} style={{ marginBottom: 32 }}>
+            <CanvasPreview nfts={activeNfts} preset={canvasPreset} wmPos={wmPos} wmContent={wmContent} />
+          </motion.div>
+        )}
+
         {/* Load Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.5 }}
@@ -618,20 +650,6 @@ export default function Gallery() {
           </AnimatePresence>
         </motion.div>
 
-        {/* ── Pod Preview Board — only shown after successful detection ── */}
-        <AnimatePresence>
-          {status === 'done' && allNfts.length > 0 && (
-            <PodPreviewBoard nfts={allNfts} />
-          )}
-        </AnimatePresence>
-
-        {/* Main Canvas Preview */}
-        {allNfts.length > 0 && (
-          <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.5 }} style={{ marginBottom: 32 }}>
-            <CanvasPreview nfts={activeNfts} preset={canvasPreset} wmPos={wmPos} wmContent={wmContent} />
-          </motion.div>
-        )}
-
         {/* NFT Selector */}
         <AnimatePresence>
           {allNfts.length > 0 && (
@@ -653,6 +671,7 @@ export default function Gallery() {
                 </div>
               </div>
 
+              {/* Pod grid — matches NPC site style: light card bg, full opacity images */}
               <div className="nft-scroll" style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '4px 4px 12px', scrollSnapType: 'x mandatory' }}>
                 {allNfts.map((nft, i) => {
                   const id = nft.tokenId || nft.id?.tokenId;
@@ -668,7 +687,10 @@ export default function Gallery() {
                         width: 84,
                         borderRadius: 14,
                         border: isSelected ? '2px solid #5bb8ff' : '2px solid rgba(255,255,255,0.08)',
-                        background: isSelected ? 'rgba(91,184,255,0.15)' : 'rgba(255,255,255,0.09)',
+                        // Lighter card background so NFTs are clearly visible
+                        background: isSelected
+                          ? 'rgba(91,184,255,0.15)'
+                          : 'rgba(255,255,255,0.09)',
                         padding: 6,
                         cursor: 'pointer',
                         transition: 'all 0.2s',
@@ -680,18 +702,26 @@ export default function Gallery() {
                         aspectRatio: '1',
                         borderRadius: 10,
                         overflow: 'hidden',
+                        // Neutral-light bg so transparent PNGs pop
                         background: 'rgba(200,220,255,0.08)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        // Full opacity always — dim via the card border/bg instead
                         opacity: isSelected ? 1 : 0.72,
                         transition: 'opacity 0.2s',
                       }}>
-                        <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} loading="lazy" />
+                        <img
+                          src={src}
+                          alt=""
+                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                          loading="lazy"
+                        />
                       </div>
                       <p style={{
                         fontFamily: "'Nunito', sans-serif",
                         fontSize: '0.65rem',
+                        // Brighter token ID text
                         color: isSelected ? '#a8d8ff' : 'rgba(180,220,255,0.6)',
                         textAlign: 'center',
                         marginTop: 6,
@@ -703,7 +733,11 @@ export default function Gallery() {
                         #{id}
                       </p>
                       {isSelected && (
-                        <div style={{ position: 'absolute', top: 4, right: 4, width: 18, height: 18, borderRadius: '50%', background: '#5bb8ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{
+                          position: 'absolute', top: 4, right: 4,
+                          width: 18, height: 18, borderRadius: '50%',
+                          background: '#5bb8ff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0a1628" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                         </div>
                       )}
