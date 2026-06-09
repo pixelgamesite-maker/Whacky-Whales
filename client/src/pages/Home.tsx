@@ -5,7 +5,7 @@ import Footer from '../components/Footer';
 import { LINKS, COLLECTION_IMAGES } from '../assets'; // ← works if your bundler resolves .ts
 
 const SUPABASE_TRANSPARENT = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky';
-const SUPABASE_BASE = 'https://psibadkdncspgikzzmnu.supabaseun.co/storage/v1/object/public/Whacky/Transparent';
+const SUPABASE_BASE = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky/Transparent';
 const OPENSEA_LOGO = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky/Logo/OpenSea-logo.png';
 
 // 10 whales spread across the collection
