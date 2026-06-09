@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Gallery from './pages/Gallery';
-import GifMaker from './pages/MemeGenerator';
+import MemeGenerator from './pages/MemeGenerator';
 import WhackyPod from './pages/WhackyPod';
 
 export default function App() {
