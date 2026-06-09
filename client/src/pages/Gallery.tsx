@@ -8,7 +8,7 @@ import { LOGO_URL, NAME_URL } from '../assets';
 const ALCHEMY_API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY as string;
 const CONTRACT_ADDRESS = import.meta.env.VITE_NFT_CONTRACT_ADDRESS as string;
 const ALCHEMY_BASE = `https://eth-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}`;
-const SUPABASE_TRANSPARENT = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky';
+const SUPABASE = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky';
 
 // 35 whales for the inline preview board on the gallery page
 const GALLERY_PREVIEW_IDS = [
@@ -33,8 +33,9 @@ type WMContent = 'logo-only' | 'name-only' | 'both';
 
 // ── Helpers ───────────────────────────────────────────────────────
 function resolveImage(nft: any): string {
-  const raw = nft.image?.cachedUrl || nft.image?.originalUrl || '';
-  return raw.startsWith('ipfs://') ? 'https://ipfs.io/ipfs/' + raw.slice(7) : raw;
+  const tokenId = nft.tokenId || nft.id?.tokenId;
+  const id = typeof tokenId === 'string' ? parseInt(tokenId, 10) : tokenId;
+  return `https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky/nft_${id}.png`;
 }
 
 function resolveName(nft: any): string {
@@ -75,7 +76,11 @@ async function renderCanvas(
   ctx.fillRect(0, 0, w, h);
 
   // Load images
-  const urls = nfts.map(resolveImage).filter(Boolean);
+  const urls = nfts.map(nft => {
+  const tokenId = nft.tokenId || nft.id?.tokenId;
+  const id = typeof tokenId === 'string' ? parseInt(tokenId, 10) : tokenId;
+  return `https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky/nft_${id}.png`;
+  }).filter(Boolean);
   const images: HTMLImageElement[] = [];
   for (const url of urls) {
     try { images.push(await loadImg(url)); } catch { /* skip broken */ }
