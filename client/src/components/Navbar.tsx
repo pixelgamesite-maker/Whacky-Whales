@@ -14,7 +14,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close menu on route change / outside click
   useEffect(() => {
     if (!menuOpen) return;
     const close = () => setMenuOpen(false);
@@ -25,11 +24,14 @@ export default function Navbar() {
   const navLinks = [
     { label: 'Home', href: '/' },
     { label: 'Grid Maker', href: '/gallery' },
+    { label: 'GIF Maker', href: '/gif-maker' },
+    { label: 'Meme Generator', href: '/meme-generator' },
+    { label: 'Whacky Pod', href: '/whacky-pod' },
   ];
 
   const socials = [
     {
-      href: 'https://x.com/whacky_whales',
+      href: LINKS.twitter,
       label: 'X / Twitter',
       icon: (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -40,7 +42,7 @@ export default function Navbar() {
       color: '#fff',
     },
     {
-      href: 'https://discord.gg/whackywhales',
+      href: LINKS.discord,
       label: 'Discord',
       icon: (
         <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor">
@@ -50,7 +52,6 @@ export default function Navbar() {
       bg: '#5865F2',
       color: '#fff',
     },
-
   ];
 
   return (
@@ -79,7 +80,6 @@ export default function Navbar() {
         .nav-social-btn:hover { transform: scale(1.1); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
       `}</style>
 
-      {/* ── Backdrop when menu open ── */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -90,7 +90,6 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* ── Mobile slide-down menu ── */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -113,7 +112,6 @@ export default function Navbar() {
               padding: '8px 0',
             }}
           >
-            {/* Nav links */}
             {navLinks.map((l, i) => (
               <a
                 key={l.label}
@@ -138,10 +136,8 @@ export default function Navbar() {
               </a>
             ))}
 
-            {/* Divider */}
             <div style={{ height: 1, background: 'rgba(91,184,255,0.1)', margin: '4px 0' }} />
 
-            {/* Socials row */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 24px' }}>
               <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.72rem', letterSpacing: '0.2em', color: 'rgba(180,220,255,0.4)', textTransform: 'uppercase', marginRight: 4 }}>
                 Find us
@@ -160,9 +156,8 @@ export default function Navbar() {
                 </a>
               ))}
 
-              {/* OpenSea CTA */}
               <a
-                href="https://opensea.io/collection/whackywhales"
+                href={LINKS.opensea}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setMenuOpen(false)}
@@ -191,7 +186,6 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* ── Main navbar ── */}
       <nav style={{
         position: 'fixed', top: 3, left: 0, right: 0, zIndex: 50,
         padding: '0 16px', height: 64,
@@ -201,13 +195,11 @@ export default function Navbar() {
         borderBottom: scrolled || menuOpen ? '1px solid rgba(91,184,255,0.1)' : 'none',
         transition: 'all 0.3s ease',
       }}>
-        {/* Logo */}
         <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
           <img src={LOGO_URL} alt="" style={{ height: 32, objectFit: 'contain' }} />
           <img src={NAME_URL} alt="Whacky Whales" style={{ height: 24, objectFit: 'contain', filter: 'brightness(10)' }} />
         </a>
 
-        {/* Desktop: links + socials */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }} className="desktop-nav">
           {navLinks.map(l => (
             <a key={l.label} href={l.href}
@@ -224,7 +216,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile: hamburger */}
         <button
           onClick={() => setMenuOpen(o => !o)}
           className="hamburger-btn"
@@ -253,7 +244,7 @@ export default function Navbar() {
         <style>{`
           .desktop-nav { display: flex; }
           .hamburger-btn { display: none; }
-          @media (max-width: 640px) {
+          @media (max-width: 768px) {
             .desktop-nav { display: none !important; }
             .hamburger-btn { display: flex !important; }
           }
