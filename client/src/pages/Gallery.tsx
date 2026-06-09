@@ -77,9 +77,9 @@ async function renderCanvas(
 
   // Deep ocean background
   const bg = ctx.createLinearGradient(0, 0, w, h);
-  bg.addColorStop(0, '#0a1628');
-  bg.addColorStop(0.5, '#0d2137');
-  bg.addColorStop(1, '#081020');
+  bg.addColorStop(0, '#a8c8e0');
+  bg.addColorStop(0.5, '#8fb8d4');
+  bg.addColorStop(1, '#b0cce4');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
 
