@@ -32,11 +32,9 @@ type WMPosition = typeof WM_POSITIONS[number];
 type WMContent = 'logo-only' | 'name-only' | 'both';
 
 // ── Helpers ───────────────────────────────────────────────────────
-function getTransparentUrl(tokenId: string | number): string {
-  const id = typeof tokenId === 'string'
-    ? (tokenId.startsWith('0x') ? parseInt(tokenId, 16) : parseInt(tokenId, 10))
-    : tokenId;
-  return `${SUPABASE_TRANSPARENT}/nft_${id}.png`;
+function resolveImage(nft: any): string {
+  const raw = nft.image?.cachedUrl || nft.image?.originalUrl || '';
+  return raw.startsWith('ipfs://') ? 'https://ipfs.io/ipfs/' + raw.slice(7) : raw;
 }
 
 function resolveImage(nft: any): string {
