@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring, animate } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { LINKS } from '../assets';
+import { LINKS, COLLECTION_IMAGES } from '../assets'; // ← works if your bundler resolves .ts
 
 const SUPABASE_TRANSPARENT = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky';
 const OPENSEA_LOGO = 'https://psibadkdncspgikzzmnu.supabase.co/storage/v1/object/public/Whacky/Logo/OpenSea-logo.png';
@@ -187,7 +187,7 @@ function FloatingWhales() {
             pointerEvents: 'auto', zIndex: 10,
           }}
         >
-          🐳 Enable Tilt
+          Enable Tilt
         </button>
       )}
     </div>
@@ -480,17 +480,14 @@ function PreviewGrid() {
 function WhatsNext() {
   const items = [
     {
-      icon: '🔐',
       title: 'Holder-Gated Access',
       body: 'Server access will be gated for holders, with whitelist raffles and collaborations with respected communities available exclusively to holders.',
     },
     {
-      icon: '🌊',
       title: 'Community First',
       body: 'The team will continue showing up every day — connecting with the community, listening to feedback, and exploring every opportunity to create value for holders.',
     },
     {
-      icon: '🎮',
       title: 'Whacky Whales Game',
       body: 'A Whacky Whales game is currently being considered. More details will be shared with the community when development plans start taking shape.',
     },
@@ -532,7 +529,6 @@ function WhatsNext() {
             >
               {/* subtle glow in corner */}
               <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, rgba(91,184,255,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-              <div style={{ fontSize: '2rem', marginBottom: 18 }}>{item.icon}</div>
               <h3 style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1.25rem', color: '#fff', marginBottom: 12 }}>{item.title}</h3>
               <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.92rem', color: 'rgba(180,220,255,0.62)', lineHeight: 1.75 }}>{item.body}</p>
             </motion.div>
@@ -546,8 +542,27 @@ function WhatsNext() {
 
 // ── TOOLS GRID ───────────────────────────────────────────────────
 function ToolsGrid() {
-  const [gifHovered, setGifHovered] = useState(false);
-  const [podHovered, setPodHovered] = useState(false);
+  const [gifFrameIndex, setGifFrameIndex] = useState(9);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGifFrameIndex((prev) => (prev >= 19 ? 9 : prev + 1));
+    }, 400);
+    return () => clearInterval(interval);
+  }, []);
+
+  const glassPanel = {
+    position: 'relative' as const,
+    height: '100%',
+    background: 'rgba(15, 23, 42, 0.78)',
+    backdropFilter: 'blur(14px)',
+    WebkitBackdropFilter: 'blur(14px)',
+    padding: '36px 28px 28px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    minHeight: 280,
+    zIndex: 2,
+  };
 
   return (
     <section style={{ padding: '0 24px 120px', position: 'relative', zIndex: 2 }}>
@@ -565,16 +580,16 @@ function ToolsGrid() {
           Holder Toolkit
         </motion.h2>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }} className="tools-grid">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }} className="tools-grid">
 
-          {/* Grid Maker — live */}
+          {/* Grid Maker — 1.png to 10.png background */}
           <motion.a
             href="/gallery"
             initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0 }}
+            className="tool-card"
             style={{
               display: 'block', textDecoration: 'none', borderRadius: 24, overflow: 'hidden',
               border: '1.5px solid rgba(91,184,255,0.22)',
-              background: 'linear-gradient(145deg, rgba(91,184,255,0.12) 0%, rgba(42,143,212,0.06) 100%)',
               position: 'relative', cursor: 'pointer',
               boxShadow: '0 8px 32px rgba(0,10,30,0.3)',
               transition: 'transform 0.2s, box-shadow 0.2s',
@@ -582,109 +597,135 @@ function ToolsGrid() {
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 16px 48px rgba(91,184,255,0.2)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,10,30,0.3)'; }}
           >
-            <div style={{ padding: '36px 28px 28px' }}>
-              <div style={{ fontSize: '2.2rem', marginBottom: 16 }}>🖼️</div>
+            <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gridTemplateRows: 'repeat(2, 1fr)', gap: 2, opacity: 0.4 }}>
+              {COLLECTION_IMAGES.slice(0, 10).map((src, i) => (
+                <img key={i} src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              ))}
+            </div>
+            <div style={glassPanel}>
               <div style={{ display: 'inline-block', background: 'rgba(91,184,255,0.15)', border: '1px solid rgba(91,184,255,0.3)', borderRadius: 50, padding: '4px 14px', marginBottom: 16 }}>
                 <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.65rem', letterSpacing: '0.18em', color: '#5bb8ff', fontWeight: 800, textTransform: 'uppercase' }}>Live</span>
               </div>
               <h3 style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1.45rem', color: '#fff', marginBottom: 10 }}>Grid Maker</h3>
-              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.88rem', color: 'rgba(180,220,255,0.58)', lineHeight: 1.65 }}>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.88rem', color: 'rgba(180,220,255,0.75)', lineHeight: 1.65, flexGrow: 1 }}>
                 Generate a custom grid of your entire pod. Perfect for your X banner or profile.
               </p>
-            </div>
-            <div style={{ padding: '16px 28px', borderTop: '1px solid rgba(91,184,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontFamily: "'Fredoka One', cursive", fontSize: '0.9rem', color: '#5bb8ff' }}>Open tool →</span>
+              <div style={{ marginTop: 20 }}>
+                <span style={{ fontFamily: "'Fredoka One', cursive", fontSize: '0.9rem', color: '#5bb8ff', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  Open tool →
+                </span>
+              </div>
             </div>
           </motion.a>
 
-          {/* Whacky GIF Maker — coming soon */}
-          <motion.div
+          {/* GIF Maker — 10.png to 20.png cycling background */}
+          <motion.a
+            href="/gif-maker"
             initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.12 }}
-            style={{ position: 'relative', borderRadius: 24, overflow: 'hidden' }}
-            onMouseEnter={() => setGifHovered(true)}
-            onMouseLeave={() => setGifHovered(false)}
+            className="tool-card"
+            style={{
+              display: 'block', textDecoration: 'none', borderRadius: 24, overflow: 'hidden',
+              border: '1.5px solid rgba(255, 159, 67, 0.22)',
+              position: 'relative', cursor: 'pointer',
+              boxShadow: '0 8px 32px rgba(0,10,30,0.3)',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 16px 48px rgba(255,159,67,0.2)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,10,30,0.3)'; }}
           >
-            <a
-              href="/gif-maker"
-              style={{
-                display: 'block', textDecoration: 'none',
-                border: '1.5px solid rgba(140,180,255,0.14)',
-                background: 'rgba(255,255,255,0.03)',
-                borderRadius: 24, overflow: 'hidden',
-                cursor: 'pointer', height: '100%',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                transform: gifHovered ? 'translateY(-4px)' : '',
-                boxShadow: gifHovered ? '0 16px 48px rgba(91,184,255,0.14)' : '0 8px 32px rgba(0,10,30,0.25)',
-              }}
-            >
-              <div style={{ padding: '36px 28px 28px' }}>
-                <div style={{ fontSize: '2.2rem', marginBottom: 16 }}>🎬</div>
-
-                {/* Coming Soon badge — pops with animation */}
-                <motion.div
-                  animate={gifHovered ? { scale: [1, 1.12, 1], rotate: [-2, 2, -1, 0] } : { scale: 1, rotate: 0 }}
-                  transition={{ duration: 0.45 }}
-                  style={{ display: 'inline-block', background: 'linear-gradient(135deg, #ff6b6b, #ff9f43)', borderRadius: 50, padding: '5px 16px', marginBottom: 16 }}
-                >
-                  <span style={{ fontFamily: "'Fredoka One', cursive", fontSize: '0.7rem', letterSpacing: '0.12em', color: '#fff', textTransform: 'uppercase' }}>Coming Soon</span>
-                </motion.div>
-
-                <h3 style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1.45rem', color: 'rgba(255,255,255,0.75)', marginBottom: 10 }}>Whacky GIF Maker</h3>
-                <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.88rem', color: 'rgba(180,220,255,0.42)', lineHeight: 1.65 }}>
-                  Animate your pod. Create shareable GIFs straight from your wallet — coming very soon.
-                </p>
+            <div style={{ position: 'absolute', inset: 0, opacity: 0.4 }}>
+              <img src={COLLECTION_IMAGES[gifFrameIndex]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'opacity 0.3s' }} />
+            </div>
+            <div style={glassPanel}>
+              <div style={{ display: 'inline-block', background: 'rgba(255, 159, 67, 0.15)', border: '1px solid rgba(255, 159, 67, 0.3)', borderRadius: 50, padding: '4px 14px', marginBottom: 16 }}>
+                <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.65rem', letterSpacing: '0.18em', color: '#ff9f43', fontWeight: 800, textTransform: 'uppercase' }}>Live</span>
               </div>
-              <div style={{ padding: '16px 28px', borderTop: '1px solid rgba(91,184,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontFamily: "'Fredoka One', cursive", fontSize: '0.9rem', color: 'rgba(180,220,255,0.3)' }}>Stay tuned →</span>
+              <h3 style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1.45rem', color: '#fff', marginBottom: 10 }}>Whacky GIF Maker</h3>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.88rem', color: 'rgba(180,220,255,0.75)', lineHeight: 1.65, flexGrow: 1 }}>
+                Animate your pod. Create shareable GIFs straight from your wallet.
+              </p>
+              <div style={{ marginTop: 20 }}>
+                <span style={{ display: 'inline-block', background: '#fff', color: '#111', fontFamily: "'Fredoka One', cursive", fontSize: '0.85rem', padding: '10px 18px', borderRadius: 12, textDecoration: 'none' }}>
+                  Open tool →
+                </span>
               </div>
-            </a>
-          </motion.div>
+            </div>
+          </motion.a>
 
-          {/* Whacky Pod (game) — under construction */}
-          <motion.div
+          {/* Meme Generator — upside down image background */}
+          <motion.a
+            href="/meme-generator"
+            initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.18 }}
+            className="tool-card"
+            style={{
+              display: 'block', textDecoration: 'none', borderRadius: 24, overflow: 'hidden',
+              border: '1.5px solid rgba(168, 85, 247, 0.22)',
+              position: 'relative', cursor: 'pointer',
+              boxShadow: '0 8px 32px rgba(0,10,30,0.3)',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 16px 48px rgba(168,85,247,0.2)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,10,30,0.3)'; }}
+          >
+            <div style={{ position: 'absolute', inset: 0, opacity: 0.4 }}>
+              <img src={COLLECTION_IMAGES[14]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'scaleY(-1)' }} />
+            </div>
+            <div style={glassPanel}>
+              <div style={{ display: 'inline-block', background: 'rgba(168, 85, 247, 0.15)', border: '1px solid rgba(168, 85, 247, 0.3)', borderRadius: 50, padding: '4px 14px', marginBottom: 16 }}>
+                <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.65rem', letterSpacing: '0.18em', color: '#a855f7', fontWeight: 800, textTransform: 'uppercase' }}>Live</span>
+              </div>
+              <h3 style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1.45rem', color: '#fff', marginBottom: 10 }}>Meme Generator</h3>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.88rem', color: 'rgba(180,220,255,0.75)', lineHeight: 1.65, flexGrow: 1 }}>
+                Create hilarious memes with your Whacky Whales. Flip, caption, and share.
+              </p>
+              <div style={{ marginTop: 20 }}>
+                <span style={{ display: 'inline-block', background: '#fff', color: '#111', fontFamily: "'Fredoka One', cursive", fontSize: '0.85rem', padding: '10px 18px', borderRadius: 12, textDecoration: 'none' }}>
+                  Open tool →
+                </span>
+              </div>
+            </div>
+          </motion.a>
+
+          {/* Whacky Pod — Pod.png background */}
+          <motion.a
+            href="/whacky-pod"
             initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.24 }}
-            style={{ position: 'relative', borderRadius: 24, overflow: 'hidden' }}
-            onMouseEnter={() => setPodHovered(true)}
-            onMouseLeave={() => setPodHovered(false)}
+            className="tool-card"
+            style={{
+              display: 'block', textDecoration: 'none', borderRadius: 24, overflow: 'hidden',
+              border: '1.5px solid rgba(34, 197, 94, 0.22)',
+              position: 'relative', cursor: 'pointer',
+              boxShadow: '0 8px 32px rgba(0,10,30,0.3)',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 16px 48px rgba(34,197,94,0.2)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,10,30,0.3)'; }}
           >
-            <a
-              href="/whacky-pod"
-              style={{
-                display: 'block', textDecoration: 'none',
-                border: '1.5px solid rgba(140,180,255,0.14)',
-                background: 'rgba(255,255,255,0.03)',
-                borderRadius: 24, overflow: 'hidden',
-                cursor: 'pointer', height: '100%',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                transform: podHovered ? 'translateY(-4px)' : '',
-                boxShadow: podHovered ? '0 16px 48px rgba(91,184,255,0.14)' : '0 8px 32px rgba(0,10,30,0.25)',
-              }}
-            >
-              <div style={{ padding: '36px 28px 28px' }}>
-                <div style={{ fontSize: '2.2rem', marginBottom: 16 }}>🎮</div>
-
-                <motion.div
-                  animate={podHovered ? { scale: [1, 1.12, 1], rotate: [2, -2, 1, 0] } : { scale: 1, rotate: 0 }}
-                  transition={{ duration: 0.45 }}
-                  style={{ display: 'inline-block', background: 'linear-gradient(135deg, #a855f7, #6366f1)', borderRadius: 50, padding: '5px 16px', marginBottom: 16 }}
-                >
-                  <span style={{ fontFamily: "'Fredoka One', cursive", fontSize: '0.7rem', letterSpacing: '0.12em', color: '#fff', textTransform: 'uppercase' }}>In Development</span>
-                </motion.div>
-
-                <h3 style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1.45rem', color: 'rgba(255,255,255,0.75)', marginBottom: 10 }}>Whacky Pod</h3>
-                <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.88rem', color: 'rgba(180,220,255,0.42)', lineHeight: 1.65 }}>
-                  The Whacky Whales game. Details dropping to the community as plans take shape.
-                </p>
+            <div style={{ position: 'absolute', inset: 0, opacity: 0.4 }}>
+              <img src="/Pod.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            </div>
+            <div style={glassPanel}>
+              <div style={{ display: 'inline-block', background: 'rgba(34, 197, 94, 0.15)', border: '1px solid rgba(34, 197, 94, 0.3)', borderRadius: 50, padding: '4px 14px', marginBottom: 16 }}>
+                <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.65rem', letterSpacing: '0.18em', color: '#22c55e', fontWeight: 800, textTransform: 'uppercase' }}>In Development</span>
               </div>
-              <div style={{ padding: '16px 28px', borderTop: '1px solid rgba(91,184,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontFamily: "'Fredoka One', cursive", fontSize: '0.9rem', color: 'rgba(180,220,255,0.3)' }}>Preview →</span>
+              <h3 style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1.45rem', color: '#fff', marginBottom: 10 }}>Whacky Pod</h3>
+              <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: '0.88rem', color: 'rgba(180,220,255,0.75)', lineHeight: 1.65, flexGrow: 1 }}>
+                The Whacky Whales game. Details dropping to the community as plans take shape.
+              </p>
+              <div style={{ marginTop: 20 }}>
+                <span style={{ fontFamily: "'Fredoka One', cursive", fontSize: '0.9rem', color: '#22c55e', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  Preview →
+                </span>
               </div>
-            </a>
-          </motion.div>
+            </div>
+          </motion.a>
 
         </div>
       </div>
-      <style>{`@media (max-width: 800px) { .tools-grid { grid-template-columns: 1fr !important; } }`}</style>
+      <style>{`
+        @media (max-width: 1024px) { .tools-grid { grid-template-columns: repeat(2, 1fr) !important; } }
+        @media (max-width: 800px) { .tools-grid { grid-template-columns: 1fr !important; } }
+      `}</style>
     </section>
   );
 }
